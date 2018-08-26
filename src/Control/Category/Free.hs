@@ -4,6 +4,10 @@ module Control.Category.Free
     , foldFunCat
     , unFoldFunCat
     , foldCat
+    , C (..)
+    , liftC
+    , toC
+    , fromC
     )
     where
 
@@ -55,3 +59,23 @@ foldCat
     => Cat c a b
     -> c a b
 foldCat = foldFunCat id
+
+newtype C f a b
+    = C { runC :: forall r. Category r
+               => (forall x y. f x y -> r x y)
+               -> r a b
+        }
+
+liftC :: f a b -> C f a b
+liftC fab = C $ \k -> k fab
+
+instance Category (C f) where
+    id = C (const id)
+    C bc . C ab = C $ \k -> bc k . ab k
+
+toC :: Cat f a b -> C f a b
+toC Id = id
+toC (f :.: g) = liftC f . toC g
+
+fromC :: C f a b -> Cat f a b
+fromC (C k) = k liftCat
