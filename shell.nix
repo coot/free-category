@@ -7,12 +7,7 @@
 with builtins;
 let
   default = import ./default.nix {inherit benchmarks compiler dev haddock test;};
-  spec = fromJSON (readFile ./nixpkgs.json);
-  src = fetchTarball {
-    url = "https://github.com/${spec.owner}/${spec.repo}/archive/${spec.rev}.tar.gz";
-    sha256 = spec.sha256;
-  };
-  nixpkgs = import src {};
+  nixpkgs = import ./nix/nixpkgs.nix {};
 in
   {
     free-category = if nixpkgs.lib.inNixShell

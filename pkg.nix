@@ -2,7 +2,7 @@
 , nixpkgs
 , stdenv
 , base
-, categories
+, free-algebras
 }:
 let
   lib = nixpkgs.lib;
@@ -13,14 +13,15 @@ let
     || lib.hasPrefix "test" relPath
     || lib.any
         (a: a == relPath)
-        [ "Setup.hs" "cabal.project" "ChangeLog.md" "package.yaml" "LICENSE"];
+        [ "Setup.hs" "cabal.project" "ChangeLog.md" "free-category.cabal" "LICENSE"];
 in
 mkDerivation {
-  pname = "free-algebras";
-  version = "0.0.4.0";
+  pname = "free-category";
+  version = "0.0.1.0";
   src = lib.cleanSourceWith { filter = srcFilter ./.; src = ./.; };
   libraryHaskellDepends = [
     base
+    free-algebras
   ];
   libraryToolDepends = [ ];
   testHaskellDepends = [

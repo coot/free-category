@@ -6,12 +6,7 @@
 }:
 with builtins;
 let
-  spec = fromJSON (readFile ./nixpkgs.json);
-  src = fetchTarball {
-    url = "https://github.com/${spec.owner}/${spec.repo}/archive/${spec.rev}.tar.gz";
-    sha256 = spec.sha256;
-  };
-  nixpkgs = import src {};
+  nixpkgs = import ./nix/nixpkgs.nix { };
 
   pkgs = nixpkgs.haskell.packages;
   lib = nixpkgs.haskell.lib;
@@ -26,7 +21,7 @@ let
     then lib.doBenchmark
     else nixpkgs.lib.id;
   doDev = if dev
-    then drv: lib.enableCabalFlag drv "develop"
+    then drv: lib.appendConfigureFlag drv "--ghc-option -Werror"
     else nixpkgs.lib.id;
 
   free-category = doDev(doHaddock(doTest(doBench(
