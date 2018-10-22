@@ -116,3 +116,12 @@ instance FreeAlgebra2 C where
 
   codom2       = proof
   forget2      = proof
+
+instance Semigroup (C f o o) where
+  f <> g = f . g
+
+instance Monoid (C f o o) where
+  mempty = id
+#if __GLASGOW_HASKELL__ < 804
+  mappend = (<>)
+#endif
