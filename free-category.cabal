@@ -46,7 +46,7 @@ library
     TypeApplications
     TypeFamilies
   build-depends:
-      base          >= 4.11 && <5
+      base          >= 4.9 && <5
     , free-algebras >= 0.0.5.1
   ghc-options:
     -Wall

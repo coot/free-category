@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Control.Category.Free
     ( -- * Free category
       Cat (..)
@@ -30,6 +31,10 @@ import           Control.Algebra.Free2
   , joinFree2
   , bindFree2
   )
+#if __GLASGOW_HASKELL__ < 804
+import           Data.Semigroup (Semigroup (..))
+import           Data.Monoid (Monoid (..))
+#endif
 
 -- |
 -- Free category encoded as a recursive data type, in a simlar way as
@@ -53,6 +58,9 @@ instance Semigroup (Cat f o o) where
 
 instance Monoid (Cat f o o) where
   mempty = Id
+#if __GLASGOW_HASKELL__ < 804
+  mappend = (<>)
+#endif
 
 type instance AlgebraType0 Cat f = ()
 type instance AlgebraType  Cat c = Category c
