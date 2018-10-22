@@ -1,21 +1,16 @@
 module Control.Category.Free
     ( -- * Free category
       Cat (..)
-    , liftCat
-    , foldFunCat
-    , foldCat
       -- * Free category (CPS style)
     , C (..)
-    , liftC
-    , foldFunC
     , toC
     , fromC
 
-    -- * Free interface
+    -- * Free interface re-exports
+    , FreeAlgebra2 (..)
     , wrapFree2
     , foldFree2
     , hoistFree2
-    , hoistFreeH2
     , joinFree2
     , bindFree2
     )
@@ -36,6 +31,12 @@ import           Control.Algebra.Free2
   , bindFree2
   )
 
+-- |
+-- Free category encoded as a recursive data type, in a simlar way as
+-- @'Control.Monad.Free.Free'@.  You can use @'FreeAlgebra2'@ class instance:
+--
+-- prop> liftFree2    @Cat :: f a b -> Cat f ab
+-- prop> foldNatFree2 @Cat :: Category d => (forall x y. f x y -> d x y) -> Cat f a b -> d a b
 data Cat :: (* -> * -> *) -> * -> * -> * where
   Id :: Cat f a a
   (:.:) :: f b c -> Cat f a b -> Cat f a c
@@ -55,66 +56,55 @@ instance Monoid (Cat f o o) where
 
 type instance AlgebraType0 Cat f = ()
 type instance AlgebraType  Cat c = Category c
+
 instance FreeAlgebra2 Cat where
-  liftFree2    = liftCat
-  foldNatFree2 = foldFunCat
+  liftFree2 = \fab -> fab :.: Id
+  {-# INLINE liftFree2 #-}
+
+  foldNatFree2 _   Id          = id
+  foldNatFree2 fun (bc :.: ab) = fun bc <<< foldNatFree2 fun ab
+  {-# INLINE foldNatFree2 #-}
+
   codom2       = proof
   forget2      = proof
 
-liftCat :: f a b -> Cat f a b
-liftCat fab = fab :.: Id
-
-foldFunCat
-  :: forall f c a b .
-     Category c
-  => (forall x y. f x y -> c x y)
-  -- ^ a map of graphs
-  -> (Cat f a b -> c a b)
-  -- ^ a functor from @'Cat' f@ to @g@
-foldFunCat _ Id = id
-foldFunCat fun (bc :.: ab)
-  = fun bc <<< foldFunCat fun ab
-
 -- |
--- It specialized to @'Cat' ('Cat' f) a b -> 'Cat' a b@, which is the 'join' of
--- the free monad associated with this construction.
-foldCat
-  :: Category c
-  => Cat c a b
-  -> c a b
-foldCat = foldFunCat id
-
+-- CPS style encoded free category; one can use @'FreeAlgebra2'@ class
+-- instance:
+--
+-- prop> liftFree2    @C :: f a b -> C f ab
+-- prop> foldNatFree2 @C :: Category d => (forall x y. f x y -> d x y) -> C f a b -> d a b
 newtype C f a b
   = C { runC :: forall r. Category r
              => (forall x y. f x y -> r x y)
              -> r a b
       }
 
-liftC :: f a b -> C f a b
-liftC fab = C $ \k -> k fab
-
 instance Category (C f) where
   id = C (const id)
   C bc . C ab = C $ \k -> bc k . ab k
 
+-- |
+-- Isomorphism between @'Cat'@ to @'C'@, which is a specialisation of @'hoistFreeH2'@.
 toC :: Cat f a b -> C f a b
-toC Id = id
-toC (f :.: g) = liftC f . toC g
+toC = hoistFreeH2
+{-# INLINE toC #-}
 
+-- |
+-- Inverse of @'fromC'@, which also is a specialisatin of @'hoistFreeH2'@.
 fromC :: C f a b -> Cat f a b
-fromC (C k) = k liftCat
-
-foldFunC
-  :: forall f c a b .
-     Category c
-  => (forall x y. f x y -> c x y)
-  -> (C f a b -> c a b)
-foldFunC fun (C f) = f fun
+fromC = hoistFreeH2
+{-# INLINE fromC #-}
 
 type instance AlgebraType0 C f = ()
 type instance AlgebraType  C c = Category c
+
 instance FreeAlgebra2 C where
-  liftFree2    = liftC
-  foldNatFree2 = foldFunC
+  liftFree2 = \fab -> C $ \k -> k fab
+  {-# INLINE liftFree2 #-}
+
+  foldNatFree2 fun (C f) = f fun
+  {-# INLINE foldNatFree2 #-}
+
   codom2       = proof
   forget2      = proof
