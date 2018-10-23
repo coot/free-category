@@ -32,6 +32,7 @@ import           Control.Algebra.Free2
   , joinFree2
   , bindFree2
   )
+import           Control.Arrow (Arrow (..))
 #if __GLASGOW_HASKELL__ < 804
 import           Data.Monoid (Monoid (..))
 import           Data.Semigroup (Semigroup (..))
@@ -58,6 +59,14 @@ instance Category (Cat f) where
   (x :.: xs) . ys = x :.: (xs . ys)
 
 infixr 9 :.:
+
+instance Arrow f => Arrow (Cat f) where
+  arr ab                          = arr ab :.: Id
+
+  Id *** Id                       = Id
+  Id *** (fxb :.: cax)            = (arr id *** fxb) :.: (Id *** cax)
+  (fxb :.: cax) *** Id            = (fxb *** arr id) :.: (cax *** Id)
+  (fxb :.: cax) *** (fyb :.: cay) = (fxb *** fyb) :.: (cax *** cay)
 
 instance Semigroup (Cat f o o) where
   f <> g = g . f
@@ -131,6 +140,10 @@ instance FreeAlgebra2 C where
 
   codom2  = proof
   forget2 = proof
+
+instance Arrow f => Arrow (C f) where
+  arr ab = C $ \k -> k (arr ab)
+  C c1 *** C c2  = C $ \k -> k (c1 id *** c2 id)
 
 instance Semigroup (C f o o) where
   f <> g = f . g
