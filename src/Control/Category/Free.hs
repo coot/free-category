@@ -45,6 +45,9 @@ import           Data.Semigroup.SSet (SSet (..))
 --
 -- prop> liftFree2    @Cat :: f a b -> Cat f ab
 -- prop> foldNatFree2 @Cat :: Category d => (forall x y. f x y -> d x y) -> Cat f a b -> d a b
+--
+-- The same performance concerns that apply to @'Control.Monad.Free.Free'@
+-- apply to this encoding of a free category.
 data Cat :: (* -> * -> *) -> * -> * -> * where
   Id :: Cat f a a
   (:.:) :: f b c -> Cat f a b -> Cat f a c
@@ -104,7 +107,8 @@ instance Category (C f) where
   C bc . C ab = C $ \k -> bc k . ab k
 
 -- |
--- Isomorphism between @'Cat'@ to @'C'@, which is a specialisation of @'hoistFreeH2'@.
+-- Isomorphism between @'Cat'@ to @'C'@, which is a specialisation of
+-- @'hoistFreeH2'@.
 toC :: Cat f a b -> C f a b
 toC = hoistFreeH2
 {-# INLINE toC #-}
