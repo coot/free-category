@@ -1,4 +1,5 @@
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP                #-}
+{-# LANGUAGE StandaloneDeriving #-}
 module Control.Category.Free
     ( -- * Free category
       Cat (..)
@@ -32,9 +33,11 @@ import           Control.Algebra.Free2
   , bindFree2
   )
 #if __GLASGOW_HASKELL__ < 804
-import           Data.Semigroup (Semigroup (..))
 import           Data.Monoid (Monoid (..))
+import           Data.Semigroup (Semigroup (..))
 #endif
+import           Data.Monoid.MSet (MSet (..))
+import           Data.Semigroup.SSet (SSet (..))
 
 -- |
 -- Free category encoded as a recursive data type, in a simlar way as
@@ -62,6 +65,14 @@ instance Monoid (Cat f o o) where
   mappend = (<>)
 #endif
 
+instance SSet (Cat f o o) (Cat f a o) where
+  act = (.)
+
+instance MSet (Cat f o o) (Cat f a o) where
+#if __GLASGOW_HASKELL__ < 804
+  mact = (.)
+#endif
+
 type instance AlgebraType0 Cat f = ()
 type instance AlgebraType  Cat c = Category c
 
@@ -73,8 +84,8 @@ instance FreeAlgebra2 Cat where
   foldNatFree2 fun (bc :.: ab) = fun bc <<< foldNatFree2 fun ab
   {-# INLINE foldNatFree2 #-}
 
-  codom2       = proof
-  forget2      = proof
+  codom2  = proof
+  forget2 = proof
 
 -- |
 -- CPS style encoded free category; one can use @'FreeAlgebra2'@ class
@@ -114,8 +125,8 @@ instance FreeAlgebra2 C where
   foldNatFree2 fun (C f) = f fun
   {-# INLINE foldNatFree2 #-}
 
-  codom2       = proof
-  forget2      = proof
+  codom2  = proof
+  forget2 = proof
 
 instance Semigroup (C f o o) where
   f <> g = f . g
@@ -124,4 +135,12 @@ instance Monoid (C f o o) where
   mempty = id
 #if __GLASGOW_HASKELL__ < 804
   mappend = (<>)
+#endif
+
+instance SSet (C f o o) (C f a o) where
+  act = (.)
+
+instance MSet (C f o o) (C f a o) where
+#if __GLASGOW_HASKELL__ < 804
+  mact = (.)
 #endif
