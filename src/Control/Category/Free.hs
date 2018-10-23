@@ -32,7 +32,7 @@ import           Control.Algebra.Free2
   , joinFree2
   , bindFree2
   )
-import           Control.Arrow (Arrow (..))
+import           Control.Arrow (Arrow (..), ArrowZero (..), ArrowChoice (..))
 #if __GLASGOW_HASKELL__ < 804
 import           Data.Monoid (Monoid (..))
 import           Data.Semigroup (Semigroup (..))
@@ -67,6 +67,15 @@ instance Arrow f => Arrow (Cat f) where
   Id *** (fxb :.: cax)            = (arr id *** fxb) :.: (Id *** cax)
   (fxb :.: cax) *** Id            = (fxb *** arr id) :.: (cax *** Id)
   (fxb :.: cax) *** (fyb :.: cay) = (fxb *** fyb) :.: (cax *** cay)
+
+instance ArrowZero f => ArrowZero (Cat f) where
+  zeroArrow = zeroArrow :.: Id
+
+instance ArrowChoice f => ArrowChoice (Cat f) where
+  Id +++ Id                       = Id
+  Id +++ (fxb :.: cax)            = (arr id +++ fxb) :.: (Id +++ cax)
+  (fxb :.: cax) +++ Id            = (fxb +++ arr id) :.: (cax +++ Id)
+  (fxb :.: cax) +++ (fyb :.: cay) = (fxb +++ fyb) :.: (cax +++ cay)
 
 instance Semigroup (Cat f o o) where
   f <> g = g . f
@@ -144,6 +153,12 @@ instance FreeAlgebra2 C where
 instance Arrow f => Arrow (C f) where
   arr ab = C $ \k -> k (arr ab)
   C c1 *** C c2  = C $ \k -> k (c1 id *** c2 id)
+
+instance ArrowZero f => ArrowZero (C f) where
+  zeroArrow = C $ \k -> k zeroArrow
+
+instance ArrowChoice f => ArrowChoice (C f) where
+  C c1 +++ C c2  = C $ \k -> k (c1 id +++ c2 id)
 
 instance Semigroup (C f o o) where
   f <> g = f . g
