@@ -22,6 +22,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Arrow.Free
       Control.Category.Free
   other-modules:
       Paths_free_category
@@ -50,8 +51,8 @@ library
     , free-algebras >= 0.0.5.1
   ghc-options:
     -Wall
-    -Wincomplete-record-updates
-    -Wincomplete-uni-patterns
-    -Wredundant-constraints
-    -Wno-deprecations
+    -fwarn-incomplete-record-updates
+    -fwarn-incomplete-uni-patterns
+    -fwarn-redundant-constraints
+    -fwarn-deprecations
   default-language: Haskell2010
