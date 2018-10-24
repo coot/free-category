@@ -8,7 +8,7 @@ module Control.Category.Free
     , toC
     , fromC
 
-    -- * Free interface re-exports
+      -- * Free interface re-exports
     , FreeAlgebra2 (..)
     , wrapFree2
     , foldFree2
@@ -19,7 +19,7 @@ module Control.Category.Free
     where
 
 import           Prelude hiding (id, (.))
-import           Control.Category (Category (..), (<<<))
+import           Control.Category (Category (..))
 import           Control.Algebra.Free2
   ( AlgebraType0
   , AlgebraType
@@ -50,12 +50,12 @@ import           Data.Semigroup.SSet (SSet (..))
 -- The same performance concerns that apply to @'Control.Monad.Free.Free'@
 -- apply to this encoding of a free category.
 data Cat :: (* -> * -> *) -> * -> * -> * where
-  Id :: Cat f a a
+  Id    :: Cat f a a
   (:.:) :: f b c -> Cat f a b -> Cat f a c
 
 instance Category (Cat f) where
   id = Id
-  Id . ys = ys
+  Id         . ys = ys
   (x :.: xs) . ys = x :.: (xs . ys)
 
 infixr 9 :.:
@@ -102,7 +102,7 @@ instance FreeAlgebra2 Cat where
   {-# INLINE liftFree2 #-}
 
   foldNatFree2 _   Id          = id
-  foldNatFree2 fun (bc :.: ab) = fun bc <<< foldNatFree2 fun ab
+  foldNatFree2 fun (bc :.: ab) = fun bc . foldNatFree2 fun ab
   {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
@@ -125,7 +125,7 @@ instance Category (C f) where
   C bc . C ab = C $ \k -> bc k . ab k
 
 -- |
--- Isomorphism between @'Cat'@ to @'C'@, which is a specialisation of
+-- Isomorphism from @'Cat'@ to @'C'@, which is a specialisation of
 -- @'hoistFreeH2'@.
 toC :: Cat f a b -> C f a b
 toC = hoistFreeH2
