@@ -1,7 +1,7 @@
 {}:
 with builtins;
 let
-  rev = "61deecdc34fc609d0f805b434101f3c8ae3b807a";
+  rev = "722fcbbb80b2142583e9266efe77992f8e32ac4c";
   url = "https://github.com/NixOS/nixpkgs/archive/${rev}.tar.gz";
   config =
     { packageOverrides = super:
@@ -14,7 +14,7 @@ let
         haskell = super.haskell // {
           packages = super.haskell.packages // {
             ghc861 = super.haskell.packages.ghc861.override { inherit overrides; };
-            ghc843 = super.haskell.packages.ghc843.override { inherit overrides; };
+            ghc844 = super.haskell.packages.ghc843.override { inherit overrides; };
             ghc822 = super.haskell.packages.ghc822.override { inherit overrides; };
             ghc802 = super.haskell.packages.ghc802.override {
               overrides = self: super: overrides self super // {
