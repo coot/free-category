@@ -14,7 +14,7 @@ let
         haskell = super.haskell // {
           packages = super.haskell.packages // {
             ghc861 = super.haskell.packages.ghc861.override { inherit overrides; };
-            ghc844 = super.haskell.packages.ghc843.override { inherit overrides; };
+            ghc844 = super.haskell.packages.ghc844.override { inherit overrides; };
             ghc822 = super.haskell.packages.ghc822.override { inherit overrides; };
             ghc802 = super.haskell.packages.ghc802.override {
               overrides = self: super: overrides self super // {
