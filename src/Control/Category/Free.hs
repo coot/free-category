@@ -37,8 +37,6 @@ import           Control.Arrow (Arrow (..), ArrowZero (..), ArrowChoice (..))
 import           Data.Monoid (Monoid (..))
 import           Data.Semigroup (Semigroup (..))
 #endif
-import           Data.Monoid.MSet (MSet (..))
-import           Data.Semigroup.SSet (SSet (..))
 
 -- |
 -- Free category encoded as a recursive data type, in a simlar way as
@@ -49,7 +47,7 @@ import           Data.Semigroup.SSet (SSet (..))
 --
 -- The same performance concerns that apply to @'Control.Monad.Free.Free'@
 -- apply to this encoding of a free category.
-data Cat :: (* -> * -> *) -> * -> * -> * where
+data Cat :: (k -> k -> *) -> k -> k -> * where
   Id    :: Cat f a a
   (:.:) :: f b c -> Cat f a b -> Cat f a c
 
@@ -84,14 +82,6 @@ instance Monoid (Cat f o o) where
   mempty = Id
 #if __GLASGOW_HASKELL__ < 804
   mappend = (<>)
-#endif
-
-instance SSet (Cat f o o) (Cat f a o) where
-  act = (.)
-
-instance MSet (Cat f o o) (Cat f a o) where
-#if __GLASGOW_HASKELL__ < 804
-  mact = (.)
 #endif
 
 type instance AlgebraType0 Cat f = ()
@@ -167,12 +157,4 @@ instance Monoid (C f o o) where
   mempty = id
 #if __GLASGOW_HASKELL__ < 804
   mappend = (<>)
-#endif
-
-instance SSet (C f o o) (C f a o) where
-  act = (.)
-
-instance MSet (C f o o) (C f a o) where
-#if __GLASGOW_HASKELL__ < 804
-  mact = (.)
 #endif

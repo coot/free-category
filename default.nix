@@ -25,6 +25,10 @@ let
     else nixpkgs.lib.id;
 
   free-category = doDev(doHaddock(doTest(doBench(
-    pkgs.${compiler}.callPackage ./pkg.nix { inherit nixpkgs; }))));
+    pkgs.${compiler}.callPackage ./pkg.nix
+      { inherit nixpkgs; }))));
+  examples = doDev(doHaddock(doTest(doBench(
+    pkgs.${compiler}.callPackage ./examples/pkg.nix
+      { inherit free-category nixpkgs; }))));
 in
-{ inherit free-category; }
+{ inherit free-category examples; }
