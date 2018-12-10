@@ -10,7 +10,6 @@ import Prelude hiding (id, (.))
 
 import Control.Arrow (Kleisli (..))
 import Control.Category (Category (..))
-import Data.Functor.Identity (Identity (..))
 
 import Control.Category.Free (Cat)
 
@@ -41,6 +40,9 @@ data SStateType (a :: StateType) where
 data State a (st :: StateType) where
   LoggedIn  :: State a 'LoggedInType
   LoggedOut :: Maybe a -> State a 'LoggedOutType
+
+runLoggedOut :: State a 'LoggedOutType -> Maybe a
+runLoggedOut (LoggedOut a) = a
 
 -- | Graph of transitions in the state machine.
 -- In abstract representation the states do not show up, the only way to record
@@ -115,16 +117,20 @@ accessSecret authToken HandleLogin{handleLogin} = lift $ do
     accessHandler' <- dataHandler a
     return $ handle accessHandler' (Just a)
 
--- | Get data following using the protocol defined by the state machine.
+-- | Get data following the protocol defined by the state machine.
+-- 
+-- Note: in GHC-8.6.1 we'd need @'MonadFail'@ which prevents from running this in
+-- @'Identity'@ monad.  To avoid this we use @'runLoggedOut'@ function.
 getData
-  :: Monad m
+  :: forall m authToken a.
+     ( Monad m )
   => (forall x y. Tr a x y -> Kleisli m x y)
   -> HandleLogin m authToken a
   -> authToken
   -> m (Maybe a)
 getData nat handleLogin authToken = case foldNatLift nat (accessSecret authToken handleLogin) of
   Kleisli fn -> do
-    LoggedOut ma <- fn (LoggedOut Nothing)
+    ma <- runLoggedOut <$> fn (LoggedOut Nothing)
     return ma
 
 -- * Interpreters
@@ -153,5 +159,5 @@ main :: IO ()
 main = do
   putStrLn "Provide a password:"
   authToken <- getLine
-  let secret = runIdentity $ getData natPure (exampleHandleLogin "password") authToken
+  secret <- getData natPure (exampleHandleLogin "password") authToken
   putStrLn ("Secret: " ++ show secret)
