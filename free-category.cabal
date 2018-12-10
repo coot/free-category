@@ -24,6 +24,7 @@ library
   exposed-modules:
       Control.Arrow.Free
       Control.Category.Free
+      Control.Category.Lifting
   other-modules:
       Paths_free_category
   hs-source-dirs:
