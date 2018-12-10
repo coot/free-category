@@ -43,6 +43,16 @@ instance (Functor m, Category c) => Category (FreeLifting m c) where
 instance (Functor m, Category c) => Lifting (FreeLifting m c) m where
   lift = Lift
 
+type instance AlgebraType0 (FreeLifting m) c = (Monad m, Category c)
+type instance AlgebraType  (FreeLifting m) c  = Lifting c m
+instance Monad m => FreeAlgebra2 (FreeLifting m) where
+  liftFree2    = Base
+  foldNatFree2 nat (Base cab)  = nat cab
+  foldNatFree2 nat (Lift mcab) = lift $ foldNatFree2 nat <$> mcab
+
+  codom2  = proof
+  forget2 = proof
+
 -- | Wrap a transition into a free category @'Cat'@ and then in
 -- @'FreeLifting'@
 --
@@ -60,16 +70,6 @@ foldNatLift
   -> FreeLifting m (Cat tr) a b
   -> c a b
 foldNatLift nat = foldNatFree2 (foldNatFree2 nat)
-
-type instance AlgebraType0 (FreeLifting m) c = (Monad m, Category c)
-type instance AlgebraType  (FreeLifting m) c  = Lifting c m
-instance Monad m => FreeAlgebra2 (FreeLifting m) where
-  liftFree2    = Base
-  foldNatFree2 nat (Base cab)  = nat cab
-  foldNatFree2 nat (Lift mcab) = lift $ foldNatFree2 nat <$> mcab
-
-  codom2  = proof
-  forget2 = proof
 
 -- |  Functor from @'->'@ category to @'Kleisli' m@.  If @m@ is @Identity@ then
 -- it will respect @'lift'@ i.e. @lfitKleisli (lift ar) = lift (liftKleisli <$>
