@@ -19,7 +19,7 @@ library
   exposed-modules:   LoginStateMachine
   -- other-modules:
   -- other-extensions:
-  build-depends:       base >=4.11 && <4.12
+  build-depends:       base >=4.9 && <5
                      , free-category >= 0.0.1.0
                      , free-algebras >= 0.0.7.0
   hs-source-dirs:      src
