@@ -61,9 +61,9 @@ instance Monad m => FreeAlgebra2 (FreeLifting m) where
 liftCat :: Monad m => tr a b -> FreeLifting m (Cat tr) a b
 liftCat = liftFree2 . liftFree2
 
- -- | Fold @'FreeLifing'@ category based on a free category @'Cat' tr@ using
- -- a natural transformation @tr x y -> c x y@.
- --
+-- | Fold @'FreeLifing'@ category based on a free category @'Cat' tr@ using
+-- a functor @tr x y -> c x y@.
+--
 foldNatLift
   :: (Monad m, Lifting c m)
   => (forall x y. tr x y -> c x y)
