@@ -1,4 +1,4 @@
-{ compiler ? "ghc843"
+{ compiler ? "ghc844"
 , haddock ? true
 , test ? true
 , benchmarks ? false
@@ -13,4 +13,7 @@ in
     free-category = if nixpkgs.lib.inNixShell
       then default.free-category.env
       else default.free-category;
+    examples = if nixpkgs.lib.inNixShell
+      then default.examples.env
+      else default.examples;
   }

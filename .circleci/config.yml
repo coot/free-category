@@ -39,33 +39,53 @@ jobs:
       - setup
       - run:
           name: "GHC 861"
-          command:
-            nix-build --argstr compiler ghc861
-      - cachix-push
+          command: |
+            nix-build -A free-category -o result-fc --argstr compiler ghc861
+            nix-build -A examples -o result-ex --argstr compiler ghc861
+      - cachix-push:
+          o: result-fc
+      - cachix-push:
+          o: result-ex
   GHC844:
     <<: *defaults
     steps:
       - setup
       - run:
           name: "GHC 844"
-          command: nix-build --argstr compiler ghc844
-      - cachix-push
+          command: |
+            nix-build -A free-category -o result-fc --argstr compiler ghc844
+            nix-build -A examples -o result-ex --argstr compiler ghc844
+      - cachix-push:
+          o: result-fc
+      - cachix-push:
+          o: result-ex
   GHC822:
     <<: *defaults
     steps:
       - setup
       - run:
           name: "GHC 822"
-          command: nix-build --argstr compiler ghc822
-      - cachix-push
+          command: |
+            nix-build -A free-category -o result-fc --argstr compiler ghc822
+            nix-build -A examples -o result-ex --argstr compiler ghc822
+      - cachix-push:
+          o: result-fc
+      - cachix-push:
+          o: result-ex
+          
   GHC802:
     <<: *defaults
     steps:
       - setup
       - run:
           name: "GHC 802"
-          command: nix-build --argstr compiler ghc802
-      - cachix-push
+          command: |
+            nix-build -A free-category -o result-fc --argstr compiler ghc802
+            nix-build -A examples -o result-ex --argstr compiler ghc802
+      - cachix-push:
+          o: result-fc
+      - cachix-push:
+          o: result-ex
 
 workflows:
   build:

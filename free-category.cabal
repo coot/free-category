@@ -24,31 +24,32 @@ library
   exposed-modules:
       Control.Arrow.Free
       Control.Category.Free
+      Control.Category.Lifting
   other-modules:
       Paths_free_category
   hs-source-dirs:
       src
   default-extensions:
-    ConstraintKinds
-    DataKinds
-    DeriveFunctor
-    EmptyDataDecls
-    FlexibleInstances
-    FlexibleContexts
-    GADTs
-    KindSignatures
-    InstanceSigs
-    MultiParamTypeClasses
-    OverloadedStrings
-    PolyKinds
-    RankNTypes
-    ScopedTypeVariables
-    TupleSections
-    TypeApplications
-    TypeFamilies
+      ConstraintKinds
+      DataKinds
+      DeriveFunctor
+      EmptyDataDecls
+      FlexibleInstances
+      FlexibleContexts
+      GADTs
+      KindSignatures
+      InstanceSigs
+      MultiParamTypeClasses
+      OverloadedStrings
+      PolyKinds
+      RankNTypes
+      ScopedTypeVariables
+      TupleSections
+      TypeApplications
+      TypeFamilies
   build-depends:
       base          >= 4.9 && <5
-    , free-algebras >= 0.0.6.0
+    , free-algebras >= 0.0.7.0
   ghc-options:
     -Wall
     -fwarn-incomplete-record-updates
