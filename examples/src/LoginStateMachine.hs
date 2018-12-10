@@ -46,9 +46,9 @@ runLoggedOut (LoggedOut a) = a
 
 -- | Graph of transitions in the state machine.
 -- In abstract representation the states do not show up, the only way to record
--- some data is to addit to the transition.  Thus @'Logout'@ can carry data.
+-- some data is to add it to the transition.  Thus @'Logout'@ can carry data.
 -- When interpreted in a some category (e.g. @'Kleisli' m@) then the data will
--- be avalable on @'LoggedOut{} :: 'State' a st@.
+-- be available on @'LoggedOut{} :: 'State' a st@.
 data Tr a from to where
   Login   :: SStateType to -> Tr a (State a 'LoggedOutType) (State a to)
   Logout  :: Maybe a -> Tr a (State a 'LoggedInType) (State a 'LoggedOutType)
@@ -120,7 +120,7 @@ accessSecret authToken HandleLogin{handleLogin} = lift $ do
 -- | Get data following the protocol defined by the state machine.
 -- 
 -- Note: in GHC-8.6.1 we'd need @'MonadFail'@ which prevents from running this in
--- @'Identity'@ monad.  To avoid this we use @'runLoggedOut'@ function.
+-- @'Identity'@ monad.  To avoid this we use the @'runLoggedOut'@ function.
 getData
   :: forall m authToken a.
      ( Monad m )
@@ -134,15 +134,15 @@ getData nat handleLogin authToken = case foldNatLift nat (accessSecret authToken
     return ma
 
 -- * Interpreters
--- To write an interpret it is enough to supply a natural transformation from
+-- To write an interpreter it is enough to supply a natural transformation from
 -- @'Tr' a from to@ to @'Kleisli' m@ for some monad @m@.
 
 -- | A pure natural transformation from @'Tr'@ to @'Kleisli' m@ for some
 -- @'Monad' m@.  Note, that even though @'Kleisli'@ category seems redundant
 -- here, as we don't use the monad in the transformation, we need
 -- a transformation into a category that satisfies the @'Lifing'@ constraint.
--- This is bause we will need the monad whn @'foldNatLift'@ will walk over the
--- constructors of '@FreeLifting'@ category.
+-- This is because we will need the monad whn @'foldNatLift'@ will walk over the
+-- constructors of the '@FreeLifting'@ category.
 --
 natPure :: forall m a from to. Monad m => Tr a from to -> Kleisli m from to
 natPure = liftKleisli . nat
