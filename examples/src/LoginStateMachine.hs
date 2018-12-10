@@ -63,6 +63,9 @@ instance Monad m => Lifting (Kleisli m) m where
 instance (Functor m, Category c) => Lifting (FreeLifting m c) m where
   lift = Lift
 
+instance Lifting (->) Identity where
+  lift = runIdentity
+
 type instance AlgebraType0 (FreeLifting m) c = (Monad m, Category c)
 type instance AlgebraType  (FreeLifting m) c  = Lifting c m
 instance Monad m => FreeAlgebra2 (FreeLifting m) where
@@ -72,6 +75,13 @@ instance Monad m => FreeAlgebra2 (FreeLifting m) where
 
   codom2  = proof
   forget2 = proof
+
+-- |  Functor from @'->'@ category to @'Kleisli' m@.  If @m@ is @Identity@ then
+-- it will respect @'lift'@ i.e. @lfitKleisli (lift ar) = lift (liftKleisli <$>
+-- ar).
+--
+liftKleisli :: Applicative m => (a -> b) -> Kleisli m a b
+liftKleisli f = Kleisli (pure . f)
 
 {-------------------------------------------------------------------------------
 -- Example State Machine, inspired by:
@@ -184,12 +194,25 @@ getData nat handleLogin authToken = case foldNatLift nat (accessSecret authToken
     return ma
 
 -- * Interpreters
+-- To write an interpret it is enough to supply a natural transformation from
+-- @'Tr' a from to@ to @'Kleisli' m@ for some monad @m@.
 
+-- | A pure natural transformation from @'Tr'@ to @'Kleisli' m@ for some
+-- @'Monad' m@.  Note, that even though @'Kleisli'@ category seems redundant
+-- here, as we don't use the monad in the transformation, we need
+-- a transformation into a category that satisfies the @'Lifing'@ constraint.
+-- This is bause we will need the monad whn @'foldNatLift'@ will walk over the
+-- constructors of '@FreeLifting'@ category.
+--
 natPure :: forall m a from to. Monad m => Tr a from to -> Kleisli m from to
-natPure (Login SLoggedIn)  = Kleisli $ \_ -> return LoggedIn
-natPure (Login SLoggedOut) = Kleisli $ \_ -> return (LoggedOut Nothing)
-natPure (Logout ma)        = Kleisli $ \_ -> return (LoggedOut ma)
-natPure Access             = Kleisli $ \_ -> return LoggedIn
+natPure = liftKleisli . nat
+ where
+  -- a natural trasformation to @'->'@
+  nat :: Tr a from to -> (from -> to)
+  nat (Login SLoggedIn)  = \_ -> LoggedIn
+  nat (Login SLoggedOut) = \_ -> (LoggedOut Nothing)
+  nat (Logout ma)        = \_ -> (LoggedOut ma)
+  nat Access             = \_ -> LoggedIn
 
 -- | A trivial program, which extracts a trivial secret.
 main :: IO ()
