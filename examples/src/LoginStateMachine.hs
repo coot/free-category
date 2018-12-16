@@ -4,12 +4,21 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections #-}
 module LoginStateMachine where
 
 import Prelude hiding (id, (.))
 
 import Control.Arrow (Kleisli (..))
 import Control.Category (Category (..))
+import Control.Monad (void)
+import Numeric.Natural (Natural)
+import Data.Functor (($>))
+import Data.Functor.Identity (Identity (..))
+import Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
+
+import Test.QuickCheck
 
 import Control.Category.Free (Cat)
 
@@ -44,15 +53,16 @@ data State a (st :: StateType) where
 runLoggedOut :: State a 'LoggedOutType -> Maybe a
 runLoggedOut (LoggedOut a) = a
 
--- | Graph of transitions in the state machine.
--- In abstract representation the states do not show up, the only way to record
--- some data is to addit to the transition.  Thus @'Logout'@ can carry data.
--- When interpreted in a some category (e.g. @'Kleisli' m@) then the data will
--- be avalable on @'LoggedOut{} :: 'State' a st@.
+-- | Graph of transitions in the state machine.  In abstract representation the
+-- states do not show up, the only way to record some data is to addit to the
+-- transition.  Thus @'Logout'@ can carry data.  When interpreted in a some
+-- category (e.g. @'Kleisli' m@) then the data will be avalable on
+-- @'LoggedOut{} :: 'State' a st@.
+--
 data Tr a from to where
-  Login   :: SStateType to -> Tr a (State a 'LoggedOutType) (State a to)
-  Logout  :: Maybe a -> Tr a (State a 'LoggedInType) (State a 'LoggedOutType)
-  Access  :: Tr a (State a 'LoggedInType) (State a 'LoggedInType)
+  Login  :: SStateType to -> Tr a (State a 'LoggedOutType) (State a to)
+  Logout :: Maybe a -> Tr a (State a 'LoggedInType) (State a 'LoggedOutType)
+  Access :: Tr a (State a 'LoggedInType) (State a 'LoggedInType)
 
 login :: Monad m
       => SStateType st
@@ -72,8 +82,14 @@ type Username = String
 
 -- * Data representation of the state machine.
 
-newtype HandleLogin m authToken a = HandleLogin {
-    handleLogin :: authToken -> m (Maybe (HandleAccess m a))
+data HandleLogin m authtoken a = HandleLogin {
+    handleLogin
+      :: m (Either (HandleLogin m authtoken a) (HandleAccess m a)),
+      -- ^ either failure with a login continuation or handle access to the
+      -- secret data
+    handleAccessDenied
+      :: m ()
+      -- ^ handle access denied
   }
 
 data HandleAccess m a where
@@ -83,32 +99,65 @@ data HandleAccess m a where
     -> HandleAccess m a
   LogoutHandler :: HandleAccess m a
 
-exampleHandleLogin
-  :: Applicative m
-  => String
-  -> HandleLogin m String String
-exampleHandleLogin passwd = HandleLogin $ \authToken ->
-  if authToken == passwd
-    then pure (Just handleAccess)
-    else pure Nothing
+handleLoginIO
+  :: String
+  -> HandleLogin IO String String
+handleLoginIO passwd = HandleLogin
+  { handleLogin
+  , handleAccessDenied
+  }
  where
-  handleAccess = AccessHandler (pure "secret") (\_ -> pure LogoutHandler)
+  handleLogin = do
+    passwd' <- putStrLn "Provide a password:" >> getLine
+    if passwd' == passwd
+      then return $ Right handleAccess
+      else return $ Left $ handleLoginIO passwd
 
+  handleAccess = AccessHandler (pure "Hello saylor!") $
+    \s -> do
+      putStrLn ("secret: " ++ s)
+      return LogoutHandler
 
--- * Abstract access function, also an isomorphism between @'HandleLogin' m a@
--- and @'FreeLifting m (Tr a) (State a 'LoggedoutType) (State
--- a 'LoggedOutType).
+  handleAccessDenied = putStrLn "AccessDenied"
 
+-- pure @'HandleLogin'@ useful for testing @'accessSecret'@
+handleLoginPure
+  :: NonEmpty String -- ^ passwords to try (cyclicly, ad infinitum)
+  -> String          -- ^ authtoken
+  -> String          -- ^ secret
+  -> HandleLogin Identity String String
+handleLoginPure passwds passwd secret = HandleLogin
+  { handleLogin = handleLogin passwds
+  , handleAccessDenied = pure ()
+  }
+ where
+  handleLogin (passwd' :| rest) = 
+    if passwd' == passwd
+      then return $ Right handleAccess
+      else case rest of 
+        []  -> return $ Left $ handleLoginPure passwds passwd secret
+        _   -> return $ Left $ handleLoginPure (NE.fromList rest) passwd secret
+
+  handleAccess = AccessHandler (pure secret) $ \_ -> return LogoutHandler
+
+-- | Abstract access function
+--
 accessSecret
-  :: forall m authToken a. Monad m
-  => authToken
-  -> HandleLogin m authToken a
+  :: forall m a . Monad m
+  => Natural
+  -- ^ how many times one can try to login; this could be implemented inside
+  -- @'HandleLogin'@ (with a small modifications) but this way we are able to
+  -- test it with a pure @'HandleLogin'@ (see @'handleLoginPure'@).
+  -> HandleLogin m String a
   -> FreeLifting m (Cat (Tr a)) (State a 'LoggedOutType) (State a 'LoggedOutType)
-accessSecret authToken HandleLogin{handleLogin} = lift $ do
-  st <- handleLogin authToken
+accessSecret 0 HandleLogin{handleAccessDenied}         = lift $ handleAccessDenied $> id
+accessSecret n HandleLogin{handleLogin} = lift $ do
+  st <- handleLogin
   case st of
-    Just accessHandler -> return $ handle accessHandler Nothing . login SLoggedIn
-    Nothing -> return id
+    -- login success
+    Right accessHandler -> return $ handle accessHandler Nothing . login SLoggedIn
+    -- login failure
+    Left handler'       -> return $ accessSecret (pred n) handler'
  where
   handle :: HandleAccess m a -> Maybe a -> FreeLifting m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
   handle LogoutHandler ma = logout ma
@@ -119,16 +168,16 @@ accessSecret authToken HandleLogin{handleLogin} = lift $ do
 
 -- | Get data following the protocol defined by the state machine.
 -- 
--- Note: in GHC-8.6.1 we'd need @'MonadFail'@ which prevents from running this in
--- @'Identity'@ monad.  To avoid this we use @'runLoggedOut'@ function.
+-- Note: in GHC-8.6 we'd need @'MonadFail'@ constraint which prevents from
+-- running this in @'Identity'@ monad.  To avoid this we use @'runLoggedOut'@
+-- function.
 getData
-  :: forall m authToken a.
-     ( Monad m )
+  :: forall m a . Monad m
   => (forall x y. Tr a x y -> Kleisli m x y)
-  -> HandleLogin m authToken a
-  -> authToken
+  -> Natural
+  -> HandleLogin m String a
   -> m (Maybe a)
-getData nat handleLogin authToken = case foldNatLift nat (accessSecret authToken handleLogin) of
+getData nat n handleLogin = case foldNatLift nat (accessSecret n handleLogin) of
   Kleisli fn -> do
     ma <- runLoggedOut <$> fn (LoggedOut Nothing)
     return ma
@@ -150,14 +199,26 @@ natPure = liftKleisli . nat
   -- a natural trasformation to @'->'@
   nat :: Tr a from to -> (from -> to)
   nat (Login SLoggedIn)  = \_ -> LoggedIn
-  nat (Login SLoggedOut) = \_ -> (LoggedOut Nothing)
-  nat (Logout ma)        = \_ -> (LoggedOut ma)
+  nat (Login SLoggedOut) = \_ -> LoggedOut Nothing
+  nat (Logout ma)        = \_ -> LoggedOut ma
   nat Access             = \_ -> LoggedIn
+
+prop_getData
+  :: NonEmptyList String
+  -> String
+  -> String
+  -> Positive Int
+  -> Property
+prop_getData (NonEmpty passwds) passwd secret (Positive n)= 
+  let res = runIdentity $ getData natPure (fromIntegral n) (handleLoginPure (NE.fromList passwds) passwd secret)
+  in if elem passwd (take n passwds)
+    then res === Just secret
+    else res === Nothing
 
 -- | A trivial program, which extracts a trivial secret.
 main :: IO ()
 main = do
-  putStrLn "Provide a password:"
-  authToken <- getLine
-  secret <- getData natPure (exampleHandleLogin "password") authToken
-  putStrLn ("Secret: " ++ show secret)
+  putStrLn ""
+  quickCheck prop_getData
+  putStrLn ""
+  void $ getData natPure 3 (handleLoginIO "password")

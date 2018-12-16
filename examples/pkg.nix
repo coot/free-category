@@ -3,6 +3,7 @@
 , base
 , free-category
 , free-algebras
+, QuickCheck
 , stdenv
 }:
 mkDerivation {
@@ -14,6 +15,7 @@ mkDerivation {
     base
     free-category
     free-algebras
+    QuickCheck
   ];
   libraryToolDepends = [ ];
   license = stdenv.lib.licenses.mpl20;
