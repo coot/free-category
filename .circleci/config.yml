@@ -38,10 +38,10 @@ jobs:
     steps:
       - setup
       - run:
-          name: "GHC 861"
+          name: "GHC 862"
           command: |
-            nix-build -A free-category -o result-fc --argstr compiler ghc861
-            nix-build -A examples -o result-ex --argstr compiler ghc861
+            nix-build -A free-category -o result-fc --argstr compiler ghc862
+            nix-build -A examples -o result-ex --argstr compiler ghc862
       - cachix-push:
           o: result-fc
       - cachix-push:
