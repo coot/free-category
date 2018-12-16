@@ -1,8 +1,13 @@
-{}:
+{ compiler ? "ghc844" }:
 with builtins;
 let
-  rev = "cb95a3c1d1b6cd9da65650be269436cbe9e265fa";
+  rev = if   compiler == "ghc802"
+          || compiler == "ghc822"
+          || compiler == "ghc844"
+    then "722fcbbb80b2142583e9266efe77992f8e32ac4c"
+    else "cb95a3c1d1b6cd9da65650be269436cbe9e265fa";
   url = "https://github.com/NixOS/nixpkgs/archive/${rev}.tar.gz";
+  url802 = "https://github.com/NixOS/nixpkgs/archive/${rev802}.tar.gz";
   config =
     { packageOverrides = super:
       let self = super.pkgs;

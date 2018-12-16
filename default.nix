@@ -6,7 +6,7 @@
 }:
 with builtins;
 let
-  nixpkgs = import ./nix/nixpkgs.nix { };
+  nixpkgs = import ./nix/nixpkgs.nix { inherit compiler; };
 
   pkgs = nixpkgs.haskell.packages;
   lib = nixpkgs.haskell.lib;
