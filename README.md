@@ -2,11 +2,14 @@
 [![Maintainer: coot](https://img.shields.io/badge/maintainer-coot-lightgrey.svg)](http://github.com/coot)
 [![CircleCI](https://circleci.com/gh/coot/free-category/tree/master.svg?style=svg)](https://circleci.com/gh/coot/free-category/tree/master)
 
-This package introduces variouos encodings of free categories in Haskell.
+This package introduces variouos presentations of free categories in Haskell.
 
 Free categories are useful to model state machines in a simple yet type safe
 way and for that purpose `Kleisli` categroies are a very useful target which
-allows to include monadic computations.
+allows to include monadic computations.  This packge contains a useful
+generalisation of `Kliesli` categories captured by `EffCategory` class
+(effectful categories), and a (free) transformer which lifts a category to
+an effectful one.
 
 ## Some examples
 * [LoginStateMachine](https://github.com/coot/free-category/blob/master/examples/src/LoginStateMachine.hs):
@@ -18,3 +21,4 @@ allows to include monadic computations.
   using a simple GADT.
 * Another
   [example](https://github.com/coot/free-algebras/blob/master/examples/src/Control/Category/Free.hs).
+* [Blog post](https://coot.me/posts/kleisli-categories-and-free-monads.html) on Keleisli categories.
