@@ -1,5 +1,5 @@
 name:           free-category
-version:        0.0.1.0
+version:        0.0.2.0
 synopsis:       Free category
 description:    Free categories
 category:       Algebra, Control, Monads, Category
@@ -24,7 +24,7 @@ library
   exposed-modules:
       Control.Arrow.Free
       Control.Category.Free
-      Control.Category.Lifting
+      Control.Category.FreeEff
   other-modules:
       Paths_free_category
   hs-source-dirs:

@@ -23,7 +23,7 @@ import Test.QuickCheck
 import Control.Category.Free (Cat)
 
 -- Import classes and combintators used in this example
-import Control.Category.Lifting
+import Control.Category.FreeEff
 
 {-------------------------------------------------------------------------------
 -- Example State Machine, inspired by:
@@ -66,16 +66,16 @@ data Tr a from to where
 
 login :: Monad m
       => SStateType st
-      -> FreeLifting m (Cat (Tr a)) (State a 'LoggedOutType) (State a st)
+      -> FreeEffCat m (Cat (Tr a)) (State a 'LoggedOutType) (State a st)
 login = liftCat . Login
 
 logout :: Monad m
        => Maybe a
-       -> FreeLifting m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
+       -> FreeEffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
 logout = liftCat . Logout
 
 access :: Monad m
-       => FreeLifting m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedInType)
+       => FreeEffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedInType)
 access = liftCat Access
 
 type Username = String
@@ -149,7 +149,7 @@ accessSecret
   -- @'HandleLogin'@ (with a small modifications) but this way we are able to
   -- test it with a pure @'HandleLogin'@ (see @'handleLoginPure'@).
   -> HandleLogin m String a
-  -> FreeLifting m (Cat (Tr a)) (State a 'LoggedOutType) (State a 'LoggedOutType)
+  -> FreeEffCat m (Cat (Tr a)) (State a 'LoggedOutType) (State a 'LoggedOutType)
 accessSecret 0 HandleLogin{handleAccessDenied}         = lift $ handleAccessDenied $> id
 accessSecret n HandleLogin{handleLogin} = lift $ do
   st <- handleLogin
@@ -159,7 +159,7 @@ accessSecret n HandleLogin{handleLogin} = lift $ do
     -- login failure
     Left handler'       -> return $ accessSecret (pred n) handler'
  where
-  handle :: HandleAccess m a -> Maybe a -> FreeLifting m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
+  handle :: HandleAccess m a -> Maybe a -> FreeEffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
   handle LogoutHandler ma = logout ma
   handle (AccessHandler accessHandler dataHandler) _ = lift $ do
     a <- accessHandler
@@ -191,7 +191,7 @@ getData nat n handleLogin = case foldNatLift nat (accessSecret n handleLogin) of
 -- here, as we don't use the monad in the transformation, we need
 -- a transformation into a category that satisfies the @'Lifing'@ constraint.
 -- This is bause we will need the monad whn @'foldNatLift'@ will walk over the
--- constructors of '@FreeLifting'@ category.
+-- constructors of '@FreeEffCat'@ category.
 --
 natPure :: forall m a from to. Monad m => Tr a from to -> Kleisli m from to
 natPure = liftKleisli . nat
