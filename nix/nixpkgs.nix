@@ -1,8 +1,13 @@
-{}:
+{ compiler ? "ghc844" }:
 with builtins;
 let
-  rev = "722fcbbb80b2142583e9266efe77992f8e32ac4c";
+  rev = if   compiler == "ghc802"
+          || compiler == "ghc822"
+          || compiler == "ghc844"
+    then "722fcbbb80b2142583e9266efe77992f8e32ac4c"
+    else "cb95a3c1d1b6cd9da65650be269436cbe9e265fa";
   url = "https://github.com/NixOS/nixpkgs/archive/${rev}.tar.gz";
+  url802 = "https://github.com/NixOS/nixpkgs/archive/${rev802}.tar.gz";
   config =
     { packageOverrides = super:
       let self = super.pkgs;
@@ -13,7 +18,16 @@ let
       in {
         haskell = super.haskell // {
           packages = super.haskell.packages // {
-            ghc861 = super.haskell.packages.ghc861.override { inherit overrides; };
+            ghc862 = super.haskell.packages.ghc862.override {
+              overrides = super: self: overrides super self // {
+                hoopl_3_10_2_2 = self.callPackage ./hoopl-3.10.2.2.nix {};
+              };
+            };
+            ghc861 = super.haskell.packages.ghc861.override {
+              overrides = super: self: overrides super self // {
+                hoopl_3_10_2_2 = self.callPackage ./hoopl-3.10.2.2.nix {};
+              };
+            };
             ghc844 = super.haskell.packages.ghc844.override { inherit overrides; };
             ghc822 = super.haskell.packages.ghc822.override { inherit overrides; };
             ghc802 = super.haskell.packages.ghc802.override {

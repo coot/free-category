@@ -8,8 +8,8 @@ script:
 - cachix push free-algebras ./result
 matrix:
   include:
-  - name: ghc861
-    env: COMPILER="ghc861"
+  - name: ghc862
+    env: COMPILER="ghc862"
   - name: ghc844
     env: COMPILER="ghc844"
   - name: ghc822

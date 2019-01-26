@@ -9,12 +9,12 @@ commands:
       - run:
           name: "nix"
           command: |
-            nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+            nix-channel --add https://nixos.org/channels/nixos-18.09
             nix-channel --update
       - run:
           name: "install"
           command: |
-            nix-env -f "<nixpkgs>" -iA cachix
+            nix-env -f "<nixpkgs>" -iA cachix -f https://cachix.org/api/v1/install
             nix-env -f "<nixpkgs>" -i openssh
             nix-env -f "<nixpkgs>" -i git
       - run:
@@ -38,10 +38,10 @@ jobs:
     steps:
       - setup
       - run:
-          name: "GHC 861"
+          name: "GHC 862"
           command: |
-            nix-build -A free-category -o result-fc --argstr compiler ghc861
-            nix-build -A examples -o result-ex --argstr compiler ghc861
+            nix-build -A free-category -o result-fc --argstr compiler ghc862
+            nix-build -A examples -o result-ex --argstr compiler ghc862
       - cachix-push:
           o: result-fc
       - cachix-push:
