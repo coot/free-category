@@ -23,7 +23,7 @@ import Test.QuickCheck
 import Control.Category.Free (Cat)
 
 -- Import classes and combintators used in this example
-import Control.Category.FreeEff
+import Control.Category.FreeEffect
 
 {-------------------------------------------------------------------------------
 -- Example State Machine, inspired by:
@@ -74,17 +74,17 @@ data Tr a from to where
 
 login :: Monad m
       => SStateType st
-      -> FreeEffCat m (Cat (Tr a)) (State a 'LoggedOutType) (State a st)
-login = liftCat . Login
+      -> EffCat m (Cat (Tr a)) (State a 'LoggedOutType) (State a st)
+login = liftEffect . Login
 
 logout :: Monad m
        => Maybe a
-       -> FreeEffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
-logout = liftCat . Logout
+       -> EffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
+logout = liftEffect . Logout
 
 access :: Monad m
-       => FreeEffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedInType)
-access = liftCat Access
+       => EffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedInType)
+access = liftEffect Access
 
 type Username = String
 
@@ -157,9 +157,9 @@ accessSecret
   -- @'HandleLogin'@ (with a small modifications) but this way we are able to
   -- test it with a pure @'HandleLogin'@ (see @'handleLoginPure'@).
   -> HandleLogin m String a
-  -> FreeEffCat m (Cat (Tr a)) (State a 'LoggedOutType) (State a 'LoggedOutType)
-accessSecret 0 HandleLogin{handleAccessDenied}         = lift $ handleAccessDenied $> id
-accessSecret n HandleLogin{handleLogin} = lift $ do
+  -> EffCat m (Cat (Tr a)) (State a 'LoggedOutType) (State a 'LoggedOutType)
+accessSecret 0 HandleLogin{handleAccessDenied}         = effect $ handleAccessDenied $> id
+accessSecret n HandleLogin{handleLogin} = effect $ do
   st <- handleLogin
   case st of
     -- login success
@@ -167,9 +167,9 @@ accessSecret n HandleLogin{handleLogin} = lift $ do
     -- login failure
     Left handler'       -> return $ accessSecret (pred n) handler'
  where
-  handle :: HandleAccess m a -> Maybe a -> FreeEffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
+  handle :: HandleAccess m a -> Maybe a -> EffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
   handle LogoutHandler ma = logout ma
-  handle (AccessHandler accessHandler dataHandler) _ = lift $ do
+  handle (AccessHandler accessHandler dataHandler) _ = effect $ do
     a <- accessHandler
     accessHandler' <- dataHandler a
     return $ handle accessHandler' (Just a)
@@ -184,7 +184,7 @@ getData
   -> Natural
   -> HandleLogin m String a
   -> m (Maybe a)
-getData nat n handleLogin = case foldNatLift nat (accessSecret n handleLogin) of
+getData nat n handleLogin = case foldNatEffCat nat (accessSecret n handleLogin) of
   Kleisli fn -> do
     ma <- runLoggedOut <$> fn (LoggedOut Nothing)
     return ma

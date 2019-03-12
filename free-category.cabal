@@ -29,7 +29,7 @@ library
       Control.Arrow.Free
       Control.Category.Free
       Control.Category.Free.Internal
-      Control.Category.FreeEff
+      Control.Category.FreeEffect
   other-modules:
       Paths_free_category
   hs-source-dirs:
