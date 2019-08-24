@@ -60,11 +60,17 @@ runLoggedOut (LoggedOut a) = a
 -- category (e.g. @'Kleisli' m@) then the data will be avalable on
 -- @'LoggedOut{} :: 'State' a st@.
 --
-
 data Tr a from to where
-  Login  :: SStateType to -> Tr a (State a 'LoggedOutType) (State a to)
-  Logout :: Maybe a -> Tr a (State a 'LoggedInType) (State a 'LoggedOutType)
-  Access :: Tr a (State a 'LoggedInType) (State a 'LoggedInType)
+  Login
+    :: SStateType to
+    -> Tr a (State a 'LoggedOutType) (State a to)
+
+  Logout
+    :: Maybe a
+    -> Tr a (State a 'LoggedInType) (State a 'LoggedOutType)
+
+  Access
+    :: Tr a (State a 'LoggedInType) (State a 'LoggedInType)
 
 login :: Monad m
       => SStateType st
@@ -133,10 +139,10 @@ handleLoginPure passwds passwd secret = HandleLogin
   , handleAccessDenied = pure ()
   }
  where
-  handleLogin (passwd' :| rest) = 
+  handleLogin (passwd' :| rest) =
     if passwd' == passwd
       then return $ Right handleAccess
-      else case rest of 
+      else case rest of
         []  -> return $ Left $ handleLoginPure passwds passwd secret
         _   -> return $ Left $ handleLoginPure (NE.fromList rest) passwd secret
 
@@ -169,7 +175,7 @@ accessSecret n HandleLogin{handleLogin} = lift $ do
     return $ handle accessHandler' (Just a)
 
 -- | Get data following the protocol defined by the state machine.
--- 
+--
 -- Note: in GHC-8.6.1 we'd need @'MonadFail'@ which prevents from running this in
 -- @'Identity'@ monad.  To avoid this we use the @'runLoggedOut'@ function.
 getData
@@ -210,7 +216,7 @@ prop_getData
   -> String
   -> Positive Int
   -> Property
-prop_getData (NonEmpty passwds) passwd secret (Positive n)= 
+prop_getData (NonEmpty passwds) passwd secret (Positive n) =
   let res = runIdentity $ getData natPure (fromIntegral n) (handleLoginPure (NE.fromList passwds) passwd secret)
   in if elem passwd (take n passwds)
     then res === Just secret
