@@ -1,4 +1,12 @@
+{-# LANGUAGE GADTs                  #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE PolyKinds              #-}
+{-# LANGUAGE RankNTypes             #-}
+{-# LANGUAGE TypeFamilies           #-}
+
+{-# OPTIONS_HADDOCK show-extensions #-}
+
 module Control.Category.FreeEff
   ( EffCategory (..)
   , FreeEffCat (..)

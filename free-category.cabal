@@ -31,24 +31,6 @@ library
       Paths_free_category
   hs-source-dirs:
       src
-  default-extensions:
-      ConstraintKinds
-      DataKinds
-      DeriveFunctor
-      EmptyDataDecls
-      FlexibleInstances
-      FlexibleContexts
-      GADTs
-      KindSignatures
-      InstanceSigs
-      MultiParamTypeClasses
-      OverloadedStrings
-      PolyKinds
-      RankNTypes
-      ScopedTypeVariables
-      TupleSections
-      TypeApplications
-      TypeFamilies
   build-depends:
       base          >= 4.9 && <5
     , free-algebras >= 0.0.7.0
