@@ -4,10 +4,10 @@
 
 This package contains efficient free category using realtime
 queues (C. Okasaki 'Pure Functional Data Structures') and another one using CPS
-style.  Also free arrows are included and free Kleisli categories.
+style.  Also free arrows and free Kleisli categories are included.
 
 Free categories are useful to model state machines in a simple yet type safe
-way and for that purpose `Kleisli` categroies are a very useful target which
+manner.  For that purpose `Kleisli` categroies are a very useful target which
 allows to include monadic computations.  This packge contains a useful
 generalisation of `Kliesli` categories captured by `EffCategory` class
 (effectful categories), and a (free) transformer which lifts a category to
