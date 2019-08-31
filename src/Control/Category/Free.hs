@@ -22,7 +22,8 @@
 module Control.Category.Free
     ( -- * Free category
       Cat (Id)
-    , arrow
+    , arrCat
+    , mapCat
     , foldCat
       -- * Free category (CPS style)
     , C (..)
@@ -78,12 +79,20 @@ data Cat (f :: k -> k -> *) a b where
          -> Cat f a c 
 
 -- | Smart constructor for embeding spanning transitions into 'Cat', the same
--- as @'liftFree2' \@'Cat'@.
+-- as @'liftFree2' \@'Cat'@.  It is like 'arr' for 'Arrows'.
 --
-arrow :: forall (f :: k -> k -> *) a b.
+arrCat :: forall (f :: k -> k -> *) a b.
          f a b
       -> Cat f a b
-arrow fab = Cat fab emptyQ
+arrCat fab = Cat fab emptyQ
+
+-- | Smart constructor 'mapCat' for morphisms of @'Cat' f@ category.
+--
+mapCat :: forall (f :: k -> k -> *) a b c.
+           f b c
+        -> Cat f a b
+        -> Cat f a c
+mapCat fbc cab = arrCat fbc . cab
 
 -- | Right fold of 'Cat' into a category, the same as @'foldNatFree2' \@'Cat'@.
 --
@@ -118,7 +127,7 @@ type instance AlgebraType  Cat c = Category c
 -- transitions embeded in 'Cat'.
 --
 instance FreeAlgebra2 Cat where
-  liftFree2 = arrow
+  liftFree2 = arrCat
   {-# INLINE liftFree2 #-}
 
   foldNatFree2 = foldCat
@@ -128,14 +137,14 @@ instance FreeAlgebra2 Cat where
   forget2 = proof
 
 instance Arrow f => Arrow (Cat f) where
-    arr = arrow . arr
+    arr = arrCat . arr
     Cat tr queue *** Cat tr' queue' = Cat (tr *** tr') (zipWithQ (***) queue queue')
     Cat tr queue *** Id             = Cat (tr *** arr id) (zipWithQ (***) queue NilQ)
     Id           *** Cat tr' queue' = Cat (arr id *** tr') (zipWithQ (***) NilQ queue')
     Id           *** Id             = Cat (arr id *** arr id) NilQ
 
 instance ArrowZero f => ArrowZero (Cat f) where
-    zeroArrow = arrow zeroArrow
+    zeroArrow = arrCat zeroArrow
 
 instance ArrowChoice f => ArrowChoice (Cat f) where
     Cat fxb cax +++ Cat fyb cay
