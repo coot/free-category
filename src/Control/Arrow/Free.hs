@@ -9,7 +9,11 @@
 
 module Control.Arrow.Free
   ( -- * Free arrow
-    Arr (Id)
+    Arr (Id, Arr, Prod)
+  , arrArr
+  , mapArr
+  , foldArr
+
     -- * Free arrow (CPS style)
   , A (..)
   , fromA
@@ -42,20 +46,38 @@ import           Control.Category.Free.Internal
 
 data Arr f a b where
   Id    :: Arr f a a
-  (:.:) :: f b c     -> Queue (Arr f) a b -> Arr f a c
+  Cons  :: f b c     -> Queue (Arr f) a b -> Arr f a c
   Arr   :: (b -> c)  -> Arr f a b -> Arr f a c
   Prod  :: Arr f a b -> Arr f a c -> Arr f a (b, c)
+
+arrArr :: (b -> c) -> Arr f b c
+arrArr bc = Arr bc Id
+
+mapArr :: f b c
+       -> Arr f a b
+       -> Arr f a c
+mapArr bc ac = Cons bc emptyQ . ac
+
+foldArr :: forall f arr a b.
+           Arrow arr
+        => (forall x y. f x y -> arr x y)
+        -> Arr f a b
+        -> arr a b
+foldArr _   Id = id
+foldArr fun (Cons bc ab) = fun bc . foldQ (foldNatFree2 fun) ab
+foldArr fun (Arr f g)    = arr f  . foldNatFree2 fun g
+foldArr fun (Prod f g)   = foldNatFree2 fun f &&& foldNatFree2 fun g
 
 instance Category (Arr f) where
   id = Id
   Id         . f  = f
   f          . Id = f
-  (f :.: g)  . h  = f :.: (g `snoc` h)
+  (Cons f g)  . h  = Cons f (g `snoc` h)
   (Arr f g)  . h  = Arr f (g . h)
   (Prod f g) . h  = Prod (f . h) (g . h)
 
 instance Arrow (Arr f) where
-  arr f     = Arr f Id
+  arr       = arrArr
   first bc  = Prod (bc . arr fst) (arr snd)
   second bc = Prod (arr fst) (bc . arr snd)
   ab *** xy = Prod (ab . arr fst) (xy . arr snd)
@@ -65,18 +87,21 @@ type instance AlgebraType0 Arr f = ()
 type instance AlgebraType  Arr c = Arrow c
 
 instance FreeAlgebra2 Arr where
-  liftFree2 = \fab -> fab :.: emptyQ
+  liftFree2 = \fab -> Cons fab emptyQ
   {-# INLINE liftFree2 #-}
 
-  foldNatFree2 _   Id = id
-  foldNatFree2 fun (bc :.: ab) = fun bc . foldQ (foldNatFree2 fun) ab
-  foldNatFree2 fun (Arr f g)   = arr f  . foldNatFree2 fun g
-  foldNatFree2 fun (Prod f g)  = foldNatFree2 fun f &&& foldNatFree2 fun g
+  foldNatFree2 = foldArr
   {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
   forget2 = proof
 
+--
+-- Free arrows using CSP style
+--
+
+-- | Free arrow using CPS sytle.
+--
 newtype A f a b
   = A { runA :: forall r. Arrow r
              => (forall x y. f x y -> r x y)
