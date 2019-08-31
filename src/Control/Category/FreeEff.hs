@@ -13,7 +13,7 @@ import Control.Arrow (Kleisli (..))
 import Control.Category (Category (..))
 import Data.Functor.Identity (Identity (..))
 
-import Control.Category.Free (Cat (..))
+import Control.Category.Free (Cat)
 import Control.Algebra.Free2 (FreeAlgebra2 (..))
 import Data.Algebra.Free (AlgebraType, AlgebraType0, proof)
 

@@ -2,7 +2,7 @@
 [![Maintainer: coot](https://img.shields.io/badge/maintainer-coot-lightgrey.svg)](http://github.com/coot)
 [![CircleCI](https://circleci.com/gh/coot/free-category/tree/master.svg?style=svg)](https://circleci.com/gh/coot/free-category/tree/master)
 
-This package introduces variouos presentations of free categories in Haskell.
+This package contains efficient free category presentations.
 
 Free categories are useful to model state machines in a simple yet type safe
 way and for that purpose `Kleisli` categroies are a very useful target which
