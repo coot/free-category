@@ -2,9 +2,12 @@
 [![Maintainer: coot](https://img.shields.io/badge/maintainer-coot-lightgrey.svg)](http://github.com/coot)
 [![CircleCI](https://circleci.com/gh/coot/free-category/tree/master.svg?style=svg)](https://circleci.com/gh/coot/free-category/tree/master)
 
-This package contains efficient free category using realtime
-queues (C. Okasaki 'Pure Functional Data Structures') and another one using CPS
-style.  Also free arrows and free Kleisli categories are included.
+This package contains efficient free categories. There are two presentations:
+
+* using realtime queues (C. Okasaki 'Pure Functional Data Structures')
+* using continuation passing style
+
+Free arrows and free Kleisli categories are also included.
 
 Free categories are useful to model state machines in a simple yet type safe
 manner.  For that purpose `Kleisli` categroies are a very useful target which
