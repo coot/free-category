@@ -25,6 +25,7 @@ library
   exposed-modules:
       Control.Arrow.Free
       Control.Category.Free
+      Control.Category.Free.Internal
       Control.Category.FreeEff
   other-modules:
       Paths_free_category
