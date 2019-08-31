@@ -103,11 +103,11 @@ foldCat :: forall f c a b.
         -> Cat f a b
         -> c a b
 foldCat _nat Id = id
-foldCat nat (Cat tr queue) =
-    case queue of
-      NilQ            -> nat tr
-      ConsQ Id queue' -> nat tr . foldQ (foldCat nat) queue'
-      ConsQ c  queue' -> nat tr . foldCat nat c . foldQ (foldCat nat) queue'
+foldCat nat (Cat tr q) =
+    case q of
+      NilQ        -> nat tr
+      ConsQ Id q' -> nat tr . foldQ (foldCat nat) q'
+      ConsQ c  q' -> nat tr . foldCat nat c . foldQ (foldCat nat) q'
 
 -- TODO: implement foldl; it might require different representation.  Function
 -- composition is applied from right to left, so it should be more efficient.
@@ -138,10 +138,10 @@ instance FreeAlgebra2 Cat where
 
 instance Arrow f => Arrow (Cat f) where
     arr = arrCat . arr
-    Cat tr queue *** Cat tr' queue' = Cat (tr *** tr') (zipWithQ (***) queue queue')
-    Cat tr queue *** Id             = Cat (tr *** arr id) (zipWithQ (***) queue NilQ)
-    Id           *** Cat tr' queue' = Cat (arr id *** tr') (zipWithQ (***) NilQ queue')
-    Id           *** Id             = Cat (arr id *** arr id) NilQ
+    Cat tr q *** Cat tr' q'     = Cat (tr *** tr') (zipWithQ (***) q q')
+    Cat tr q *** Id             = Cat (tr *** arr id) (zipWithQ (***) q NilQ)
+    Id           *** Cat tr' q' = Cat (arr id *** tr') (zipWithQ (***) NilQ q')
+    Id           *** Id         = Cat (arr id *** arr id) NilQ
 
 instance ArrowZero f => ArrowZero (Cat f) where
     zeroArrow = arrCat zeroArrow

@@ -202,9 +202,9 @@ foldQ :: forall (f :: k -> k -> *) c a b.
       => (forall x y. f x y -> c x y)
       -> Queue f a b
       -> c a b
-foldQ nat queue = case queue of
-    NilQ            -> id
-    ConsQ tr queue' -> nat tr . foldQ nat queue'
+foldQ nat q = case q of
+    NilQ        -> id
+    ConsQ tr q' -> nat tr . foldQ nat q'
 
 zipWithQ :: forall f g a b a' b'.
         Arrow f
@@ -220,6 +220,9 @@ zipWithQ fn queueA queueB = case (queueA, queueB) of
                                -> ConsQ (trA' `fn` trB') (zipWithQ fn queueA' queueB')
 
 
+--
+-- Internal API
+--
 
 exec :: ListTr f b c -> ListTr (Op f) b a -> ListTr f b x -> Queue f a c
 exec xs ys (ConsTr _ t) = Queue xs ys t
