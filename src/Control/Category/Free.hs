@@ -21,7 +21,7 @@
 
 module Control.Category.Free
     ( -- * Free category
-      Cat
+      Cat (Id)
     , arrow
     , foldCat
       -- * Free category (CPS style)
