@@ -9,7 +9,7 @@
 
 module Control.Arrow.Free
   ( -- * Free arrow
-    Arr (..)
+    Arr (Id)
     -- * Free arrow (CPS style)
   , A (..)
   , fromA
@@ -38,10 +38,11 @@ import           Control.Algebra.Free2
   , joinFree2
   , bindFree2
   )
+import           Control.Category.Free.Internal
 
 data Arr f a b where
   Id    :: Arr f a a
-  (:.:) :: f b c     -> Arr f a b -> Arr f a c
+  (:.:) :: f b c     -> Queue (Arr f) a b -> Arr f a c
   Arr   :: (b -> c)  -> Arr f a b -> Arr f a c
   Prod  :: Arr f a b -> Arr f a c -> Arr f a (b, c)
 
@@ -49,7 +50,7 @@ instance Category (Arr f) where
   id = Id
   Id         . f  = f
   f          . Id = f
-  (f :.: g)  . h  = f :.: (g . h)
+  (f :.: g)  . h  = f :.: (g `snoc` h)
   (Arr f g)  . h  = Arr f (g . h)
   (Prod f g) . h  = Prod (f . h) (g . h)
 
@@ -64,11 +65,11 @@ type instance AlgebraType0 Arr f = ()
 type instance AlgebraType  Arr c = Arrow c
 
 instance FreeAlgebra2 Arr where
-  liftFree2 = \fab -> fab :.: Id
+  liftFree2 = \fab -> fab :.: emptyQ
   {-# INLINE liftFree2 #-}
 
   foldNatFree2 _   Id = id
-  foldNatFree2 fun (bc :.: ab) = fun bc . foldNatFree2 fun ab
+  foldNatFree2 fun (bc :.: ab) = fun bc . foldQ (foldNatFree2 fun) ab
   foldNatFree2 fun (Arr f g)   = arr f  . foldNatFree2 fun g
   foldNatFree2 fun (Prod f g)  = foldNatFree2 fun f &&& foldNatFree2 fun g
   {-# INLINE foldNatFree2 #-}
