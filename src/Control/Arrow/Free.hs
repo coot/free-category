@@ -1,4 +1,6 @@
+{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE GADTs               #-}
+{-# LANGUAGE FlexibleInstances   #-}
 {-# LANGUAGE InstanceSigs        #-}
 {-# LANGUAGE PolyKinds           #-}
 {-# LANGUAGE RankNTypes          #-}
@@ -30,6 +32,11 @@ module Control.Arrow.Free
 import           Prelude hiding (id, (.))
 import           Control.Arrow (Arrow (..))
 import           Control.Category (Category (..))
+#if __GLASGOW_HASKELL__ < 804
+import           Data.Monoid (Monoid (..))
+import           Data.Semigroup (Semigroup (..))
+#endif
+
 import           Control.Algebra.Free2
   ( AlgebraType0
   , AlgebraType
@@ -75,6 +82,15 @@ instance Category (Arr f) where
   (Cons f g)  . h  = Cons f (g `snoc` h)
   (Arr f g)  . h  = Arr f (g . h)
   (Prod f g) . h  = Prod (f . h) (g . h)
+
+instance Semigroup (Arr f o o) where
+    f <> g = f . g
+
+instance Monoid (Arr f o o) where
+    mempty = Id
+#if __GLASGOW_HASKELL__ < 804
+    mappend = (<>)
+#endif
 
 instance Arrow (Arr f) where
   arr       = arrArr
@@ -124,6 +140,15 @@ fromA = hoistFreeH2
 instance Category (A f) where
   id = A (const id)
   A f . A g = A $ \k -> f k . g k
+
+instance Semigroup (A f o o) where
+    f <> g = f . g
+
+instance Monoid (A f o o) where
+    mempty = id
+#if __GLASGOW_HASKELL__ < 804
+    mappend = (<>)
+#endif
 
 instance Arrow (A f) where
   arr f = A (const (arr f))
