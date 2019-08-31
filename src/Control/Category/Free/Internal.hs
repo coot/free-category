@@ -23,6 +23,7 @@
 --
 module Control.Category.Free.Internal
   ( Op (..)
+  , hoistOp
   , ListTr (..)
   , Queue (NilQ, ConsQ)
   , emptyQ
@@ -52,6 +53,16 @@ import           Control.Algebra.Free2 ( AlgebraType0
 -- from @b@ to @a@ in the original category.
 --
 newtype Op (f :: k -> k -> *) (a :: k) (b :: k) = Op { runOp :: f b a }
+
+-- | 'Op' is an endo-functor of the category of categories.
+--
+hoistOp :: forall (f :: k -> k -> *)
+                  (g :: k -> k -> *)
+                  a b.
+           (forall x y. f x y -> g x y)
+        -> Op f a b
+        -> Op g a b
+hoistOp nat (Op ba) = Op (nat ba)
 
 instance Category f => Category (Op f) where
     id = Op id
