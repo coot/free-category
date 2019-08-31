@@ -1,4 +1,12 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE InstanceSigs        #-}
+{-# LANGUAGE PolyKinds           #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies        #-}
+
+{-# OPTIONS_HADDOCK show-extensions #-}
+
 module Control.Arrow.Free
   ( -- * Free arrow
     Arr (..)

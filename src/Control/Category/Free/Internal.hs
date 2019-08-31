@@ -1,6 +1,11 @@
-{-# LANGUAGE CPP             #-}
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE ViewPatterns    #-}
+{-# LANGUAGE CPP               #-}
+{-# LANGUAGE GADTs             #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE PatternSynonyms   #-}
+{-# LANGUAGE PolyKinds         #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE TypeFamilies      #-}
+{-# LANGUAGE ViewPatterns      #-}
 
 {-# OPTIONS_HADDOCK show-extensions #-}
 
@@ -12,6 +17,10 @@
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 #endif
 
+
+-- | Internal module, contains implementation of type aligned real time queues
+-- (C.Okasaki 'Purely Functional Data Structures').
+--
 module Control.Category.Free.Internal
   ( Op (..)
   , ListTr (..)
@@ -47,6 +56,15 @@ newtype Op (f :: k -> k -> *) (a :: k) (b :: k) = Op { runOp :: f b a }
 instance Category f => Category (Op f) where
     id = Op id
     Op f . Op g = Op (g . f)
+
+instance Category f => Semigroup (Op f o o) where
+    (<>) = (.)
+
+instance Category f => Monoid (Op f o o) where
+    mempty = id
+#if __GLASGOW_HASKELL__ < 804
+    mappend = (<>)
+#endif
 
 -- |
 -- Free category encoded as a recursive data type, in a simlar way as
