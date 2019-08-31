@@ -77,32 +77,32 @@ instance Category f => Monoid (Op f o o) where
 -- apply to this encoding of a free category.
 --
 data ListTr :: (k -> k -> *) -> k -> k -> * where
-  NilTr :: ListTr f a a
-  (:.:)   :: f b c -> ListTr f a b -> ListTr f a c
+  NilTr  :: ListTr f a a
+  ConsTr :: f b c -> ListTr f a b -> ListTr f a c
 
 instance Category (ListTr f) where
   id = NilTr
   NilTr    . ys = ys
-  (x :.: xs) . ys = x :.: (xs . ys)
-
-infixr 9 :.:
+  (ConsTr x xs) . ys = ConsTr x (xs . ys)
 
 instance Arrow f => Arrow (ListTr f) where
-  arr ab                          = arr ab :.: NilTr
+  arr ab                          = arr ab `ConsTr` NilTr
 
-  (fxb :.: cax) *** (fyb :.: cay) = (fxb *** fyb) :.: (cax *** cay)
-  (fxb :.: cax) *** NilTr         = (fxb *** arr id) :.: (cax *** NilTr)
-  NilTr *** (fxb :.: cax)         = (arr id *** fxb) :.: (NilTr *** cax)
-  NilTr *** NilTr                 = NilTr
+  (ConsTr fxb cax) *** (ConsTr fyb cay)
+                             = (fxb *** fyb)    `ConsTr` (cax *** cay)
+  (ConsTr fxb cax) *** NilTr = (fxb *** arr id) `ConsTr` (cax *** NilTr)
+  NilTr *** (ConsTr fxb cax) = (arr id *** fxb) `ConsTr` (NilTr *** cax)
+  NilTr *** NilTr            = NilTr
 
 instance ArrowZero f => ArrowZero (ListTr f) where
-  zeroArrow = zeroArrow :.: NilTr
+  zeroArrow = zeroArrow `ConsTr` NilTr
 
 instance ArrowChoice f => ArrowChoice (ListTr f) where
-  (fxb :.: cax) +++ (fyb :.: cay) = (fxb +++ fyb) :.: (cax +++ cay)
-  (fxb :.: cax) +++ NilTr         = (fxb +++ arr id) :.: (cax +++ NilTr)
-  NilTr +++ (fxb :.: cax)         = (arr id +++ fxb) :.: (NilTr +++ cax)
-  NilTr +++ NilTr                 = NilTr
+  (ConsTr fxb cax) +++ (ConsTr fyb cay)
+                             = (fxb +++ fyb)    `ConsTr` (cax +++ cay)
+  (ConsTr fxb cax) +++ NilTr = (fxb +++ arr id) `ConsTr` (cax +++ NilTr)
+  NilTr +++ (ConsTr fxb cax) = (arr id +++ fxb) `ConsTr` (NilTr +++ cax)
+  NilTr +++ NilTr            = NilTr
 
 instance Semigroup (ListTr f o o) where
   f <> g = g . f
@@ -117,11 +117,11 @@ type instance AlgebraType0 ListTr f = ()
 type instance AlgebraType  ListTr c = Category c
 
 instance FreeAlgebra2 ListTr where
-  liftFree2 = \fab -> fab :.: NilTr
+  liftFree2 = \fab -> ConsTr fab NilTr
   {-# INLINE liftFree2 #-}
 
   foldNatFree2 _   NilTr     = id
-  foldNatFree2 fun (bc :.: ab) = fun bc . foldNatFree2 fun ab
+  foldNatFree2 fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
   {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
@@ -150,7 +150,7 @@ cons :: forall (f :: k -> k -> *) a b c.
         f b c
      -> Queue f a b
      -> Queue f a c
-cons fbc (Queue f r s) = Queue (fbc :.: f) r (undefined :.: s)
+cons fbc (Queue f r s) = Queue (ConsTr fbc f) r (ConsTr undefined s)
 
 data ViewL f a b where
     EmptyL :: ViewL f a a
@@ -160,15 +160,15 @@ data ViewL f a b where
 --
 uncons :: Queue f a b
        -> ViewL f a b
-uncons (Queue NilTr NilTr _)          = EmptyL
-uncons (Queue (tr :.: f) r (_ :.: s)) = tr :< exec f r s
-uncons _                              = error "Queue.uncons: invariant violation"
+uncons (Queue NilTr NilTr _)                = EmptyL
+uncons (Queue (ConsTr tr f) r (ConsTr _ s)) = tr :< exec f r s
+uncons _                                    = error "Queue.uncons: invariant violation"
 
 snoc :: forall (f :: k -> k -> *) a b c.
         Queue f b c
      -> f a b
      -> Queue f a c
-snoc (Queue f r s) g = exec f (Op g :.: r) s
+snoc (Queue f r s) g = exec f (ConsTr (Op g) r) s
 
 pattern ConsQ :: f b c -> Queue f a b -> Queue f a c
 pattern ConsQ a as <- (uncons -> a :< as) where
@@ -211,12 +211,12 @@ zipWithQ fn queueA queueB = case (queueA, queueB) of
 
 
 exec :: ListTr f b c -> ListTr (Op f) b a -> ListTr f b x -> Queue f a c
-exec xs ys (_ :.: t) = Queue xs ys t
-exec xs ys NilTr     = Queue xs' NilTr xs'
+exec xs ys (ConsTr _ t) = Queue xs ys t
+exec xs ys NilTr        = Queue xs' NilTr xs'
   where
     xs' = rotate xs ys NilTr
 
 rotate :: ListTr f c d -> ListTr (Op f) c b -> ListTr f a b -> ListTr f a d
-rotate NilTr      (Op f :.: NilTr) a = f :.: a
-rotate (f :.: fs) (Op g :.: gs)    a = f :.: rotate fs gs (g :.: a)
-rotate _          _                  _ = error "Queue.rotate: impossible happend"
+rotate NilTr         (ConsTr (Op f) NilTr) a = ConsTr f a
+rotate (ConsTr f fs) (ConsTr (Op g) gs)    a = ConsTr f (rotate fs gs (ConsTr g a))
+rotate _             _                     _ = error "Queue.rotate: impossible happend"
