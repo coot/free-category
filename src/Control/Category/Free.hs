@@ -31,7 +31,7 @@ module Control.Category.Free
     , fromC
       -- * Oposite category
     , Op (..)
-
+    , hoistOp
       -- * Free interface re-exports
     , FreeAlgebra2 (..)
     , wrapFree2

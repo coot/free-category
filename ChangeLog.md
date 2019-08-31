@@ -17,3 +17,4 @@
 - free arrows (concrete and condensity transformed)
 
 ## Unreleased changes
+- hoistOp
