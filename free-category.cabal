@@ -1,5 +1,5 @@
 name:           free-category
-version:        0.0.2.0
+version:        0.0.3.0
 synopsis:       Free category
 description:    Free categories
 category:       Algebra, Control, Monads, Category
@@ -15,7 +15,7 @@ cabal-version:  >= 1.10
 extra-source-files:
     ChangeLog.md
     README.md
-tested-with:    GHC==8.0.2, GHC==8.2.2, GHC==8.4.4, GHC==8.6.3
+tested-with:    GHC==8.0.2, GHC==8.2.2, GHC==8.4.4, GHC==8.6.5
 
 source-repository head
   type: git

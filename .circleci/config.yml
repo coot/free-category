@@ -33,15 +33,15 @@ commands:
           name: "cachix push"
           command: cachix push free-algebras << parameters.o >>
 jobs:
-  GHC861:
+  GHC865:
     <<: *defaults
     steps:
       - setup
       - run:
-          name: "GHC 862"
+          name: "GHC 865"
           command: |
-            nix-build -A free-category -o result-fc --argstr compiler ghc862
-            nix-build -A examples -o result-ex --argstr compiler ghc862
+            nix-build -A free-category -o result-fc --argstr compiler ghc865
+            nix-build -A examples -o result-ex --argstr compiler ghc865
       - cachix-push:
           o: result-fc
       - cachix-push:
@@ -90,7 +90,7 @@ jobs:
 workflows:
   build:
     jobs:
-      - GHC861
+      - GHC865
       - GHC844
       - GHC822
       - GHC802
