@@ -5,6 +5,14 @@
 {-# LANGUAGE TypeOperators      #-}
 {-# LANGUAGE ViewPatterns       #-}
 
+#if __GLASGOW_HASKELL__ <= 802
+-- ghc802 does not infer that 'cons' is used when using a bidirectional
+-- pattern
+{-# OPTIONS_GHC -Wno-unused-top-binds    #-}
+-- the 'complete' pragma was introduced in ghc804
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+#endif
+
 module Control.Category.Free
     ( -- * Free category
       Cat
@@ -173,7 +181,9 @@ pattern NilQ :: () => a ~ b => Queue f a b
 pattern NilQ <- (uncons -> EmptyL) where
     NilQ = emptyQ
 
+#if __GLASGOW_HASKELL__ > 802
 {-# complete NilQ, ConsQ #-}
+#endif
 
 -- | Efficient fold of a queue into a category.
 --
