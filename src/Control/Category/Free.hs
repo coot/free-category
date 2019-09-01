@@ -169,6 +169,7 @@ instance Category (Cat f) where
 
 instance Arrow f => Arrow (Cat f) where
     arr = arrCat . arr
+    {-# INLINE arr #-}
 
     Cat q (Op  tr) *** Cat q' (Op tr') =
       Cat (zipWithQ (\x y -> op (unOp x *** unOp y)) q q')
@@ -181,6 +182,7 @@ instance Arrow f => Arrow (Cat f) where
           (Op $ arr id *** tr')
     Id       *** Id =
       Cat NilQ (Op $ arr id *** arr id)
+    {-# INLINE (***) #-}
 
 instance ArrowZero f => ArrowZero (Cat f) where
     zeroArrow = arrCat zeroArrow
@@ -196,6 +198,7 @@ instance ArrowChoice f => ArrowChoice (Cat f) where
       Cat (zipWithQ (\x y -> op (unOp x +++ unOp y)) NilQ xb)
           (Op $ arr id +++ ax)
     Id +++ Id = Id
+    {-# INLINE (+++) #-}
 
 type instance AlgebraType0 Cat f = ()
 type instance AlgebraType  Cat c = Category c
@@ -285,10 +288,13 @@ instance FreeAlgebra2 CatL where
 
 instance Arrow f => Arrow (CatL f) where
     arr = arrCatL . arr
+    {-# INLINE arr #-}
+
     CatL tr q *** CatL tr' q' = CatL (tr *** tr') (zipWithQ (***) q q')
     CatL tr q *** IdL         = CatL (tr *** arr id) (zipWithQ (***) q NilQ)
     IdL       *** CatL tr' q' = CatL (arr id *** tr') (zipWithQ (***) NilQ q')
     IdL       *** IdL         = CatL (arr id *** arr id) NilQ
+    {-# INLINE (***) #-}
 
 instance ArrowZero f => ArrowZero (CatL f) where
     zeroArrow = arrCatL zeroArrow
@@ -299,6 +305,7 @@ instance ArrowChoice f => ArrowChoice (CatL f) where
     CatL fxb cax +++ IdL   = CatL (fxb +++ arr id) (zipWithQ (+++) cax NilQ)
     IdL +++ (CatL fxb cax) = CatL (arr id +++ fxb) (zipWithQ (+++) NilQ cax)
     IdL +++ IdL            = IdL
+    {-# INLINE (+++) #-}
 
 instance Semigroup (CatL f o o) where
     f <> g = f . g
@@ -359,13 +366,17 @@ instance FreeAlgebra2 C where
 
 instance Arrow f => Arrow (C f) where
   arr ab = C $ \k -> k (arr ab)
+  {-# INLINE arr #-}
+
   C c1 *** C c2  = C $ \k -> k (c1 id *** c2 id)
+  {-# INLINE (***) #-}
 
 instance ArrowZero f => ArrowZero (C f) where
   zeroArrow = C $ \k -> k zeroArrow
 
 instance ArrowChoice f => ArrowChoice (C f) where
   C c1 +++ C c2  = C $ \k -> k (c1 id +++ c2 id)
+  {-# INLINE (+++) #-}
 
 instance Semigroup (C f o o) where
   f <> g = f . g
