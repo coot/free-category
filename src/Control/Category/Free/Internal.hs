@@ -35,6 +35,7 @@ module Control.Category.Free.Internal
   , uncons
   , snoc
   , foldQ
+  , hoistQ
   , zipWithQ
   ) where
 
@@ -240,6 +241,20 @@ zipWithQ fn queueA queueB = case (queueA, queueB) of
     (ConsQ trA' queueA', ConsQ trB' queueB')
                                -> ConsQ (trA' `fn` trB') (zipWithQ fn queueA' queueB')
 
+
+-- | 'Queue' is an endo-functor on the category of graphs (or category of
+-- categories), thus one can hoist the transitions using a natural
+-- transformation.  This in analogy to @'map' :: (a -> b) -> [a] -> [b]@.
+--
+hoistQ :: forall (f :: k -> k -> *)
+                 (g :: k -> k -> *)
+                 a  b.
+          (forall x y. f x y -> g x y)
+       -> Queue f a b
+       -> Queue g a b
+hoistQ nat queue = case queue of
+    NilQ            -> NilQ
+    ConsQ tr queue' -> ConsQ (nat tr) (hoistQ nat queue')
 
 --
 -- Internal API
