@@ -240,7 +240,7 @@ foldQ nat q = case q of
 {-# INLINE foldQ #-}
 
 zipWithQ :: forall f g a b a' b'.
-        Arrow f
+        Category f
      => (forall x y x' y'. f x y -> f x' y' -> f (g x x') (g y y'))
      -> Queue f a  b
      -> Queue f a' b'
