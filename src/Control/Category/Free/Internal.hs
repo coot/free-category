@@ -32,6 +32,7 @@ module Control.Category.Free.Internal
   , Queue (NilQ, ConsQ)
   , emptyQ
   , cons
+  , ViewL (..)
   , uncons
   , snoc
   , foldQ
