@@ -16,6 +16,14 @@ generalisation of `Kliesli` categories captured by `EffCategory` class
 (effectful categories), and a (free) transformer which lifts a category to
 an effectful one.
 
+## Benchmarks
+
+Check performence characteristics of various presentations free categories:
+
+* [raport-O0](./bench/raport-O0.html)
+* [raport-O1](./bench/raport-O1.html)
+* [raport-O2](./bench/raport-O2.html)
+
 ## Some examples
 * [LoginStateMachine](https://github.com/coot/free-category/blob/master/examples/src/LoginStateMachine.hs):
   based on [State Machines All The Way
