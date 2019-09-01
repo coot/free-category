@@ -95,6 +95,9 @@ instance Category f => Monoid (Op f o o) where
 -- The same performance concerns that apply to @'Control.Monad.Free.Free'@
 -- apply to this encoding of a free category.
 --
+-- Note that even though this is a naive version, it behaves quite well in
+-- simple benchmarks and quite stable regardless of the level of optimisations.
+--
 data ListTr :: (k -> k -> *) -> k -> k -> * where
   NilTr  :: ListTr f a a
   ConsTr :: f b c -> ListTr f a b -> ListTr f a c
