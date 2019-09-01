@@ -114,7 +114,7 @@ foldCat nat (Cat q0 (Op tr0)) =
       ConsQ Id q' -> go q' . nat tr0
       ConsQ c  q' -> go q' . foldCat nat (unOp c) . nat tr0
   where
-    -- like foldQ
+    -- like foldNatQ
     go :: Queue (Cat (Op f)) x y -> c y x
     go q = case q of
       NilQ        -> id
@@ -128,7 +128,7 @@ op :: forall (f :: k -> k -> *) x y.
    -> Cat (Op f) y x
 op = unsafeCoerce
 -- op Id = Id
--- op (Cat q tr) = Cat emptyQ (Op tr) . foldQ id q
+-- op (Cat q tr) = Cat emptyQ (Op tr) . foldNatQ id q
 {-# INLINE op #-}
 
 -- TODO: add a proof that unsafeCoerce is safe
@@ -137,7 +137,7 @@ unOp :: forall (f :: k -> k -> *) x y.
      -> Cat f y x
 unOp = unsafeCoerce
 -- unOp Id = Id
--- unOp (Cat q (Op tr)) = Cat emptyQ tr . foldQ unDual q
+-- unOp (Cat q (Op tr)) = Cat emptyQ tr . foldNatQ unDual q
 {-# INLINE unOp #-}
 
 {-
@@ -260,8 +260,8 @@ foldCatL _nat IdL = id
 foldCatL nat (CatL tr q) =
     case q of
       NilQ         -> nat tr
-      ConsQ IdL q' -> nat tr . foldQ (foldCatL nat) q'
-      ConsQ c  q'  -> nat tr . foldCatL nat c . foldQ (foldCatL nat) q'
+      ConsQ IdL q' -> nat tr . foldNatQ (foldCatL nat) q'
+      ConsQ c  q'  -> nat tr . foldCatL nat c . foldNatQ (foldCatL nat) q'
 {-# INLINE foldCatL #-}
 
 -- | /complexity/ of composition @('.')@: @O\(1\)@ (worst case)
