@@ -69,6 +69,7 @@ hoistOp :: forall (f :: k -> k -> *)
         -> Op f a b
         -> Op g a b
 hoistOp nat (Op ba) = Op (nat ba)
+{-# INLINE hoistOp #-}
 
 instance Category f => Category (Op f) where
     id = Op id
@@ -109,8 +110,9 @@ instance (forall (x :: k) (y :: k). Show (f x y)) => Show (ListTr f a b) where
 
 instance Category (ListTr f) where
   id = NilTr
-  NilTr    . ys = ys
   (ConsTr x xs) . ys = ConsTr x (xs . ys)
+  NilTr         . ys = ys
+  {-# INLINE (.) #-}
 
 instance Arrow f => Arrow (ListTr f) where
   arr ab                          = arr ab `ConsTr` NilTr
@@ -165,9 +167,9 @@ instance FreeAlgebra2 ListTr where
 --
 data Queue (f :: k -> k -> *) (a :: k) (b :: k) where
     Queue :: forall f a c b x.
-             !(ListTr f b c)
+               ListTr f      b c
           -> !(ListTr (Op f) b a)
-          -> !(ListTr f b x)
+          ->   ListTr f      b x
           -> Queue f a c
 
 #if __GLASGOW_HASKELL__ >= 806
@@ -183,7 +185,8 @@ cons :: forall (f :: k -> k -> *) a b c.
         f b c
      -> Queue f a b
      -> Queue f a c
-cons fbc (Queue f r s) = Queue (ConsTr fbc f) r (ConsTr undefined s)
+cons bc (Queue f r s) = Queue (ConsTr bc f) r (ConsTr undefined s)
+{-# INLINE cons #-}
 
 data ViewL f a b where
     EmptyL :: ViewL f a a
@@ -196,12 +199,14 @@ uncons :: Queue f a b
 uncons (Queue NilTr NilTr _)     = EmptyL
 uncons (Queue (ConsTr tr f) r s) = tr :< exec f r s
 uncons _                         = error "Queue.uncons: invariant violation"
+{-# INLINE uncons #-}
 
 snoc :: forall (f :: k -> k -> *) a b c.
         Queue f b c
      -> f a b
      -> Queue f a c
 snoc (Queue f r s) g = exec f (ConsTr (Op g) r) s
+{-# INLINE snoc #-}
 
 pattern ConsQ :: f b c -> Queue f a b -> Queue f a c
 pattern ConsQ a as <- (uncons -> a :< as) where
@@ -227,6 +232,7 @@ foldQ :: forall (f :: k -> k -> *) c a b.
 foldQ nat q = case q of
     NilQ        -> id
     ConsQ tr q' -> nat tr . foldQ nat q'
+{-# INLINE foldQ #-}
 
 zipWithQ :: forall f g a b a' b'.
         Arrow f
@@ -265,8 +271,10 @@ exec xs ys (ConsTr _ t) = Queue xs ys t
 exec xs ys NilTr        = Queue xs' NilTr xs'
   where
     xs' = rotate xs ys NilTr
+{-# INLINE exec #-}
 
 rotate :: ListTr f c d -> ListTr (Op f) c b -> ListTr f a b -> ListTr f a d
 rotate NilTr         (ConsTr (Op f) NilTr) a = ConsTr f a
 rotate (ConsTr f fs) (ConsTr (Op g) gs)    a = ConsTr f (rotate fs gs (ConsTr g a))
 rotate _             _                     _ = error "Queue.rotate: impossible happend"
+{-# INLINE rotate #-}
