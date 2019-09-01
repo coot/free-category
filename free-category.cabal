@@ -41,3 +41,18 @@ library
     -fwarn-redundant-constraints
     -fwarn-deprecations
   default-language: Haskell2010
+
+benchmark bench-cats
+  hs-source-dirs:
+      bench
+  main-is:
+      Main.hs
+  type:
+      exitcode-stdio-1.0
+  build-depends:
+      base
+    , free-category
+    , criterion
+  ghc-options:
+    -rtsopts
+  default-language: Haskell2010
