@@ -37,7 +37,7 @@ module Control.Category.Free.Internal
   , ViewL (..)
   , uncons
   , snoc
-  , foldQ
+  , foldNatQ
   , foldrQ
   , foldlQ
   , hoistQ
@@ -243,13 +243,13 @@ foldrQ  nat ab (ConsQ xd bx) = nat xd (foldrQ nat ab bx)
 --
 -- /complexity/ @O\(n\)@
 --
-foldQ :: forall (f :: k -> k -> *) c a b.
-         Category c
-      => (forall x y. f x y -> c x y)
-      -> Queue f a b
-      -> c a b
-foldQ nat = foldrQ (\f c -> nat f . c) id
-{-# INLINE foldQ #-}
+foldNatQ :: forall (f :: k -> k -> *) c a b.
+            Category c
+         => (forall x y. f x y -> c x y)
+         -> Queue f a b
+         -> c a b
+foldNatQ nat = foldrQ (\f c -> nat f . c) id
+{-# INLINE foldNatQ #-}
 
 -- | 'foldl' of a 'Queue'
 --

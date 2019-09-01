@@ -71,7 +71,7 @@ foldArr :: forall f arr a b.
         -> Arr f a b
         -> arr a b
 foldArr _   Id = id
-foldArr fun (Cons bc ab) = fun bc . foldQ (foldNatFree2 fun) ab
+foldArr fun (Cons bc ab) = fun bc . foldNatQ (foldNatFree2 fun) ab
 foldArr fun (Arr f g)    = arr f  . foldNatFree2 fun g
 foldArr fun (Prod f g)   = foldNatFree2 fun f &&& foldNatFree2 fun g
 
