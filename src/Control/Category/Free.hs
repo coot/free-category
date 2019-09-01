@@ -23,16 +23,16 @@
 #endif
 
 module Control.Category.Free
-    ( -- * Free category
+    ( -- * Optimised version of free category
       Cat (Id)
     , arrCat
-    , mapCat
     , foldCat
 
-      -- * Optimised version of free category
-    , CatR (IdR)
-    , arrCatR
-    , foldCatR
+      -- * Free category
+    , CatL (IdL)
+    , arrCatL
+    , mapCatL
+    , foldCatL
 
       -- * Free category (CPS style)
     , C (..)
@@ -78,62 +78,93 @@ import           Data.Semigroup (Semigroup (..))
 import           Control.Category.Free.Internal
 import           Unsafe.Coerce (unsafeCoerce)
 
---
--- Free categories based on real time queues; Ideas after E.Kmett's guanxi
--- project.
---
 
--- | Category for which morphism composition has @O\(1\)@ complexity and fold
--- is linear in the number of transitions.
+-- | Optimised version of a free category.
 --
--- It has a good behaviour for morhisms build with 'foldl' (right to left).
--- 
+-- @('.')@ has @O\(1\)@ complexity, folding is @O\(n\)@ where @n@ is the number
+-- of transitions.
+--
+-- It is optimised for building a morphism from left to right (e.g. with 'foldr' and
+-- @('.')@).  The performence benefits were only seen with @-O1@ or @-O2@,
+-- though the @-O2@ performance might not be what you expect: morphisms build
+-- with right fold are fast, but when left folding is used the performance
+-- drasticly decrease (this was not observed with @-O1@).
+--
 data Cat (f :: k -> k -> *) a b where
-    Id   :: Cat f a a 
-    Cat  :: forall f a b c.
-            f b c
-         -> Queue (Cat f) a b
-         -> Cat f a c 
+    Id  :: Cat f a a
+    Cat :: Queue (Cat (Op f)) c b
+        -> Op f b a
+        -> Cat f a c
 
--- | Smart constructor for embeding spanning transitions into 'Cat', the same
--- as @'liftFree2' \@'Cat'@.  It is like 'arr' for 'Arrows'.
---
 arrCat :: forall (f :: k -> k -> *) a b.
-         f a b
-      -> Cat f a b
-arrCat fab = Cat fab emptyQ
+          f a b
+       -> Cat f a b
+arrCat ab = Cat emptyQ (Op ab)
 {-# INLINE arrCat #-}
 
--- | Smart constructor 'mapCat' for morphisms of @'Cat' f@ category.
---
-mapCat :: forall (f :: k -> k -> *) a b c.
-           f b c
-        -> Cat f a b
-        -> Cat f a c
-mapCat fbc cab = arrCat fbc . cab
-
--- | Right fold of 'Cat' into a category, the same as @'foldNatFree2' \@'Cat'@.
---
--- /complexity/: @O\(n\) where @n@ is number of transition embedded in 'Cat'.
 foldCat :: forall f c a b.
            Category c
         => (forall x y. f x y -> c x y)
         -> Cat f a b
         -> c a b
 foldCat _nat Id = id
-foldCat nat (Cat tr q) =
-    case q of
-      NilQ        -> nat tr
-      ConsQ Id q' -> nat tr . foldQ (foldCat nat) q'
-      ConsQ c  q' -> nat tr . foldCat nat c . foldQ (foldCat nat) q'
+foldCat nat (Cat q0 (Op tr0)) =
+    case q0 of
+      NilQ        -> nat tr0
+      ConsQ Id q' -> go q' . nat tr0
+      ConsQ c  q' -> go q' . foldCat nat (unOp c) . nat tr0
+  where
+    -- like foldQ
+    go :: Queue (Cat (Op f)) x y -> c y x
+    go q = case q of
+      NilQ        -> id
+      ConsQ zy q' -> go q' . foldCat nat (unOp zy)
+    {-# INLINE go #-}
 {-# INLINE foldCat #-}
 
--- | /complexity/ of composition @('.')@: @O\(1\)@ (worst case)
+-- TODO: add a proof that unsafeCoerce is safe
+op :: forall (f :: k -> k -> *) x y.
+      Cat f x y
+   -> Cat (Op f) y x
+op = unsafeCoerce
+-- op Id = Id
+-- op (Cat q tr) = Cat emptyQ (Op tr) . foldQ id q
+{-# INLINE op #-}
+
+-- TODO: add a proof that unsafeCoerce is safe
+unOp :: forall (f :: k -> k -> *) x y.
+        Cat (Op f) x y
+     -> Cat f y x
+unOp = unsafeCoerce
+-- unOp Id = Id
+-- unOp (Cat q (Op tr)) = Cat emptyQ tr . foldQ unDual q
+{-# INLINE unOp #-}
+
+{-
+dual :: forall (f :: k -> k -> *) x y.
+        Cat f x y
+     -> Cat (Op (Op f)) x y
+dual Id = Id
+dual (Cat q tr) = Cat (hoistQ dual q) (Op (Op tr))
+{-# INLINE dual #-}
+
+-- this is clearly safe
+unDual :: forall (f :: k -> k -> *) x y.
+          Cat (Op (Op f)) x y
+       -> Cat f x y
+unDual = unsafeCoerce
+-- unDual Id = Id
+-- unDual (Cat q (Op (Op tr))) = Cat (hoistQ unDual q) tr
+{-# INLINE unDual #-}
+-}
+
 instance Category (Cat f) where
     id = Id
 
-    Cat f q . h = Cat f (q `snoc` h)
-    Id . f  = f
+    f . Cat q (g :: Op g x a)
+             = Cat (q `snoc` op f) g
+    Id . f   = f
+    f   . Id = f
     {-# INLINE (.) #-}
 
 type instance AlgebraType0 Cat f = ()
@@ -150,120 +181,103 @@ instance FreeAlgebra2 Cat where
   codom2  = proof
   forget2 = proof
 
-instance Arrow f => Arrow (Cat f) where
-    arr = arrCat . arr
-    Cat tr q *** Cat tr' q'     = Cat (tr *** tr') (zipWithQ (***) q q')
-    Cat tr q *** Id             = Cat (tr *** arr id) (zipWithQ (***) q NilQ)
-    Id           *** Cat tr' q' = Cat (arr id *** tr') (zipWithQ (***) NilQ q')
-    Id           *** Id         = Cat (arr id *** arr id) NilQ
+--
+-- Free categories based on real time queues; Ideas after E.Kmett's guanxi
+-- project.
+--
 
-instance ArrowZero f => ArrowZero (Cat f) where
-    zeroArrow = arrCat zeroArrow
+-- | Category for which morphism composition has @O\(1\)@ complexity and fold
+-- is linear in the number of transitions.
+--
+-- It has a good behaviour for morhisms build with 'foldl' (right to left).
+-- 
+data CatL (f :: k -> k -> *) a b where
+    IdL  :: CatL f a a 
+    CatL :: forall f a b c.
+            f b c
+         -> Queue (CatL f) a b
+         -> CatL f a c 
 
-instance ArrowChoice f => ArrowChoice (Cat f) where
-    Cat fxb cax +++ Cat fyb cay
-                         = Cat (fxb +++ fyb) (zipWithQ (+++) cax cay)
-    Cat fxb cax +++ Id   = Cat (fxb +++ arr id) (zipWithQ (+++) cax NilQ)
-    Id +++ (Cat fxb cax) = Cat (arr id +++ fxb) (zipWithQ (+++) NilQ cax)
-    Id +++ Id            = Id
+-- | Smart constructor for embeding spanning transitions into 'Cat', the same
+-- as @'liftFree2' \@'Cat'@.  It is like 'arr' for 'Arrows'.
+--
+arrCatL :: forall (f :: k -> k -> *) a b.
+          f a b
+       -> CatL f a b
+arrCatL fab = CatL fab emptyQ
+{-# INLINE arrCatL #-}
 
-instance Semigroup (Cat f o o) where
+-- | Smart constructor 'mapCatL' for morphisms of @'Cat' f@ category.
+--
+mapCatL :: forall (f :: k -> k -> *) a b c.
+            f b c
+         -> CatL f a b
+         -> CatL f a c
+mapCatL fbc cab = arrCatL fbc . cab
+
+-- | Right fold of 'Cat' into a category, the same as @'foldNatFree2' \@'Cat'@.
+--
+-- /complexity/: @O\(n\) where @n@ is number of transition embedded in 'Cat'.
+foldCatL :: forall f c a b.
+            Category c
+         => (forall x y. f x y -> c x y)
+         -> CatL f a b
+         -> c a b
+foldCatL _nat IdL = id
+foldCatL nat (CatL tr q) =
+    case q of
+      NilQ         -> nat tr
+      ConsQ IdL q' -> nat tr . foldQ (foldCatL nat) q'
+      ConsQ c  q'  -> nat tr . foldCatL nat c . foldQ (foldCatL nat) q'
+{-# INLINE foldCatL #-}
+
+-- | /complexity/ of composition @('.')@: @O\(1\)@ (worst case)
+instance Category (CatL f) where
+    id = IdL
+
+    CatL f q . h = CatL f (q `snoc` h)
+    IdL . f  = f
+    {-# INLINE (.) #-}
+
+type instance AlgebraType0 CatL f = ()
+type instance AlgebraType  CatL c = Category c
+
+-- | /complexity/ of 'foldNatFree2': @O\(n\)@ where @n@ is number of
+-- transitions embeded in 'Cat'.
+--
+instance FreeAlgebra2 CatL where
+  liftFree2 = arrCatL
+
+  foldNatFree2 = foldCatL
+
+  codom2  = proof
+  forget2 = proof
+
+instance Arrow f => Arrow (CatL f) where
+    arr = arrCatL . arr
+    CatL tr q *** CatL tr' q' = CatL (tr *** tr') (zipWithQ (***) q q')
+    CatL tr q *** IdL         = CatL (tr *** arr id) (zipWithQ (***) q NilQ)
+    IdL       *** CatL tr' q' = CatL (arr id *** tr') (zipWithQ (***) NilQ q')
+    IdL       *** IdL         = CatL (arr id *** arr id) NilQ
+
+instance ArrowZero f => ArrowZero (CatL f) where
+    zeroArrow = arrCatL zeroArrow
+
+instance ArrowChoice f => ArrowChoice (CatL f) where
+    CatL fxb cax +++ CatL fyb cay
+                           = CatL (fxb +++ fyb) (zipWithQ (+++) cax cay)
+    CatL fxb cax +++ IdL   = CatL (fxb +++ arr id) (zipWithQ (+++) cax NilQ)
+    IdL +++ (CatL fxb cax) = CatL (arr id +++ fxb) (zipWithQ (+++) NilQ cax)
+    IdL +++ IdL            = IdL
+
+instance Semigroup (CatL f o o) where
     f <> g = f . g
 
-instance Monoid (Cat f o o) where
-    mempty = Id
+instance Monoid (CatL f o o) where
+    mempty = IdL
 #if __GLASGOW_HASKELL__ < 804
     mappend = (<>)
 #endif
-
-
--- | Optimised version of a free category.
---
--- @('.')@ has @O\(1\)@ complexity, folding is @O\(n\)@ where @n@ is the number
--- of transitions.
---
--- It is optimised for building a morphism from left to right (e.g. with 'foldr' and
--- @('.')@).  The performence benefits were only seen with @-O1@ or @-O2@,
--- though the @-O2@ performance might not be what you expect: morphisms build
--- with right fold are fast, but when left folding is used the performance
--- drasticly decrease (this was not observed with @-O1@).
---
-data CatR (f :: k -> k -> *) a b where
-    IdR  :: CatR f a a
-    CatR :: Queue (CatR (Op f)) c b
-         -> Op f b a
-         -> CatR f a c
-
-arrCatR :: forall (f :: k -> k -> *) a b.
-         f a b
-      -> CatR f a b
-arrCatR ab = CatR emptyQ (Op ab)
-{-# INLINE arrCatR #-}
-
-instance Category (CatR f) where
-    id = IdR
-
-    f . CatR q (g :: Op g x a)
-              = CatR (q `snoc` op f) g
-    IdR . f   = f
-    f   . IdR = f
-    {-# INLINE (.) #-}
-
-foldCatR :: forall f c a b.
-            Category c
-         => (forall x y. f x y -> c x y)
-         -> CatR f a b
-         -> c a b
-foldCatR _nat IdR = id
-foldCatR nat  (CatR q0 (Op tr0)) =
-    case q0 of
-      NilQ         -> nat tr0
-      ConsQ IdR q' -> go q' . nat tr0
-      ConsQ c   q' -> go q' . foldCatR nat (unOp c) . nat tr0
-  where
-    -- like foldQ
-    go :: Queue (CatR (Op f)) x y -> c y x
-    go q = case q of
-      NilQ        -> id
-      ConsQ zy q' -> go q' . foldCatR nat (unOp zy)
-    {-# INLINE go #-}
-{-# INLINE foldCatR #-}
-
--- TODO: add a proof that unsafeCoerce is safe
-op :: forall (f :: k -> k -> *) x y.
-      CatR f x y
-   -> CatR (Op f) y x
-op = unsafeCoerce
--- op IdR = IdR
--- op (CatR q tr) = CatR emptyQ (Op tr) . foldQ id q
-{-# INLINE op #-}
-
--- TODO: add a proof that unsafeCoerce is safe
-unOp :: forall (f :: k -> k -> *) x y.
-        CatR (Op f) x y
-     -> CatR f y x
-unOp = unsafeCoerce
--- unOp IdR = IdR
--- unOp (CatR q (Op tr)) = CatR emptyQ tr . foldQ unDual q
-{-# INLINE unOp #-}
-
-{-
-dual :: forall (f :: k -> k -> *) x y.
-        CatR f x y
-     -> CatR (Op (Op f)) x y
-dual IdR = IdR
-dual (CatR q tr) = CatR (hoistQ dual q) (Op (Op tr))
-{-# INLINE dual #-}
-
--- this is clearly safe
-unDual :: forall (f :: k -> k -> *) x y.
-          CatR (Op (Op f)) x y
-       -> CatR f x y
-unDual = unsafeCoerce
--- unDual IdR = IdR
--- unDual (CatR q (Op (Op tr))) = CatR (hoistQ unDual q) tr
-{-# INLINE unDual #-}
--}
 
 --
 -- CPS style free categories
