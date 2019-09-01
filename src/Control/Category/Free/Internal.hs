@@ -171,9 +171,9 @@ data ViewL f a b where
 --
 uncons :: Queue f a b
        -> ViewL f a b
-uncons (Queue NilTr NilTr _)                = EmptyL
-uncons (Queue (ConsTr tr f) r (ConsTr _ s)) = tr :< exec f r s
-uncons _                                    = error "Queue.uncons: invariant violation"
+uncons (Queue NilTr NilTr _)     = EmptyL
+uncons (Queue (ConsTr tr f) r s) = tr :< exec f r s
+uncons _                         = error "Queue.uncons: invariant violation"
 
 snoc :: forall (f :: k -> k -> *) a b c.
         Queue f b c
