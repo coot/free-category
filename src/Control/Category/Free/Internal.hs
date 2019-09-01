@@ -1,11 +1,15 @@
-{-# LANGUAGE CPP               #-}
-{-# LANGUAGE GADTs             #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE PatternSynonyms   #-}
-{-# LANGUAGE PolyKinds         #-}
-{-# LANGUAGE RankNTypes        #-}
-{-# LANGUAGE TypeFamilies      #-}
-{-# LANGUAGE ViewPatterns      #-}
+{-# LANGUAGE CPP                   #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE PatternSynonyms       #-}
+{-# LANGUAGE PolyKinds             #-}
+{-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE ViewPatterns          #-}
+
+#if __GLASGOW_HASKELL__ >= 806
+{-# LANGUAGE QuantifiedConstraints #-}
+#endif
 
 {-# OPTIONS_HADDOCK show-extensions #-}
 
@@ -53,6 +57,7 @@ import           Control.Algebra.Free2 ( AlgebraType0
 -- from @b@ to @a@ in the original category.
 --
 newtype Op (f :: k -> k -> *) (a :: k) (b :: k) = Op { runOp :: f b a }
+  deriving Show
 
 -- | 'Op' is an endo-functor of the category of categories.
 --
@@ -90,6 +95,16 @@ instance Category f => Monoid (Op f o o) where
 data ListTr :: (k -> k -> *) -> k -> k -> * where
   NilTr  :: ListTr f a a
   ConsTr :: f b c -> ListTr f a b -> ListTr f a c
+
+lengthListTr :: ListTr f a b -> Int
+lengthListTr NilTr = 0
+lengthListTr (ConsTr _ xs) = 1 + lengthListTr xs
+
+#if __GLASGOW_HASKELL__ >= 806
+instance (forall (x :: k) (y :: k). Show (f x y)) => Show (ListTr f a b) where
+    show NilTr         = "NilTr"
+    show (ConsTr x xs) = "ConsTr " ++ show x ++ " " ++ show xs
+#endif
 
 instance Category (ListTr f) where
   id = NilTr
@@ -153,6 +168,12 @@ data Queue (f :: k -> k -> *) (a :: k) (b :: k) where
           -> !(ListTr (Op f) b a)
           -> !(ListTr f b x)
           -> Queue f a c
+
+#if __GLASGOW_HASKELL__ >= 806
+instance (forall (x :: k) (y :: k). Show (f x y))
+      => Show (Queue f a b) where
+    show (Queue f r s) = "Queue (" ++ show f ++ ") (" ++ show r ++ ") " ++ show (lengthListTr s)
+#endif
 
 emptyQ :: Queue (f :: k -> k -> *) a a
 emptyQ = Queue NilTr NilTr NilTr
