@@ -29,13 +29,19 @@ module Control.Category.Free
     , mapCat
     , foldCat
 
+      -- * Optimised version of free category
     , CatR (IdR)
     , arrCatR
     , foldCatR
+
       -- * Free category (CPS style)
     , C (..)
     , toC
     , fromC
+
+      -- * Naive version of a free category
+    , ListTr (..)
+
       -- * Oposite category
     , Op (..)
     , hoistOp
@@ -77,8 +83,10 @@ import           Unsafe.Coerce (unsafeCoerce)
 -- project.
 --
 
--- | Efficient encoding of a category for which morphism composition has
--- @O\(1\)@ complexity and fold is linear in the number of transitions.
+-- | Category for which morphism composition has @O\(1\)@ complexity and fold
+-- is linear in the number of transitions.
+--
+-- It has a good behaviour for morhisms build with 'foldl' (right to left).
 -- 
 data Cat (f :: k -> k -> *) a b where
     Id   :: Cat f a a 
@@ -170,6 +178,9 @@ instance Monoid (Cat f o o) where
 
 
 -- | Optimised version of a free category.
+--
+-- @('.')@ has @O\(1\)@ complexity, folding is @O\(n\)@ where @n@ is the number
+-- of transitions.
 --
 -- It is optimised for building a morphism from left to right (e.g. with 'foldr' and
 -- @('.')@).  The performence benefits were only seen with @-O1@ or @-O2@,
@@ -264,6 +275,7 @@ unDual = unsafeCoerce
 --
 -- prop> liftFree2    @C :: f a b -> C f a b
 -- prop> foldNatFree2 @C :: Category d => (forall x y. f x y -> d x y) -> C f a b -> d a b
+--
 newtype C f a b
   = C { runC :: forall r. Category r
              => (forall x y. f x y -> r x y)
