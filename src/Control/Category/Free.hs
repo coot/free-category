@@ -85,6 +85,7 @@ arrCat :: forall (f :: k -> k -> *) a b.
          f a b
       -> Cat f a b
 arrCat fab = Cat fab emptyQ
+{-# INLINE arrCat #-}
 
 -- | Smart constructor 'mapCat' for morphisms of @'Cat' f@ category.
 --
@@ -108,17 +109,15 @@ foldCat nat (Cat tr q) =
       NilQ        -> nat tr
       ConsQ Id q' -> nat tr . foldQ (foldCat nat) q'
       ConsQ c  q' -> nat tr . foldCat nat c . foldQ (foldCat nat) q'
-
--- TODO: implement foldl; it might require different representation.  Function
--- composition is applied from right to left, so it should be more efficient.
+{-# INLINE foldCat #-}
 
 -- | /complexity/ of composition @('.')@: @O\(1\)@ (worst case)
 instance Category (Cat f) where
     id = Id
 
-    Id . f  = f
-    f  . Id = f
     Cat f q . h = Cat f (q `snoc` h)
+    Id . f  = f
+    {-# INLINE (.) #-}
 
 type instance AlgebraType0 Cat f = ()
 type instance AlgebraType  Cat c = Category c
@@ -128,10 +127,8 @@ type instance AlgebraType  Cat c = Category c
 --
 instance FreeAlgebra2 Cat where
   liftFree2 = arrCat
-  {-# INLINE liftFree2 #-}
 
   foldNatFree2 = foldCat
-  {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
   forget2 = proof
@@ -181,6 +178,7 @@ newtype C f a b
 instance Category (C f) where
   id = C (const id)
   C bc . C ab = C $ \k -> bc k . ab k
+  {-# INLINE (.) #-}
 
 -- |
 -- Isomorphism from @'Cat'@ to @'C'@, which is a specialisation of
