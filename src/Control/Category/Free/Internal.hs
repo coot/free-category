@@ -29,6 +29,7 @@ module Control.Category.Free.Internal
   ( Op (..)
   , hoistOp
   , ListTr (..)
+  , lengthListTr
   , Queue (NilQ, ConsQ)
   , emptyQ
   , cons
