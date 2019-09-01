@@ -167,6 +167,36 @@ instance Category (Cat f) where
     f   . Id = f
     {-# INLINE (.) #-}
 
+instance Arrow f => Arrow (Cat f) where
+    arr = arrCat . arr
+
+    Cat q (Op  tr) *** Cat q' (Op tr') =
+      Cat (zipWithQ (\x y -> op (unOp x *** unOp y)) q q')
+          (Op $ tr *** tr')
+    Cat q (Op tr) *** Id =
+      Cat (zipWithQ (\x y -> op (unOp x *** unOp y)) q NilQ)
+          (Op $ tr *** arr id)
+    Id *** Cat q' (Op tr')  =
+      Cat (zipWithQ (\x y -> op (unOp x *** unOp y)) NilQ q')
+          (Op $ arr id *** tr')
+    Id       *** Id =
+      Cat NilQ (Op $ arr id *** arr id)
+
+instance ArrowZero f => ArrowZero (Cat f) where
+    zeroArrow = arrCat zeroArrow
+
+instance ArrowChoice f => ArrowChoice (Cat f) where
+    Cat xb (Op ax) +++ Cat yb (Op ay) =
+      Cat (zipWithQ (\x y -> op (unOp x +++ unOp y)) xb yb)
+          (Op $ ax +++ ay)
+    Cat xb (Op ax) +++ Id =
+      Cat (zipWithQ (\x y -> op (unOp x +++ unOp y)) xb NilQ)
+          (Op $ ax +++ arr id)
+    Id +++ (Cat xb (Op ax)) =
+      Cat (zipWithQ (\x y -> op (unOp x +++ unOp y)) NilQ xb)
+          (Op $ arr id +++ ax)
+    Id +++ Id = Id
+
 type instance AlgebraType0 Cat f = ()
 type instance AlgebraType  Cat c = Category c
 
