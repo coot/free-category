@@ -1,13 +1,16 @@
-{-# LANGUAGE BangPatterns       #-}
-{-# LANGUAGE CPP                #-}
-{-# LANGUAGE GADTs              #-}
-{-# LANGUAGE FlexibleInstances  #-}
-{-# LANGUAGE PatternSynonyms    #-}
-{-# LANGUAGE PolyKinds          #-}
-{-# LANGUAGE RankNTypes         #-}
-{-# LANGUAGE TypeOperators      #-}
-{-# LANGUAGE TypeFamilies       #-}
-{-# LANGUAGE ViewPatterns       #-}
+{-# LANGUAGE BangPatterns        #-}
+{-# LANGUAGE CPP                 #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE FlexibleInstances   #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE InstanceSigs        #-}
+{-# LANGUAGE PatternSynonyms     #-}
+{-# LANGUAGE PolyKinds           #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators       #-}
+{-# LANGUAGE TypeFamilies        #-}
+{-# LANGUAGE ViewPatterns        #-}
 
 {-# OPTIONS_HADDOCK show-extensions #-}
 
@@ -25,6 +28,10 @@ module Control.Category.Free
     , arrCat
     , mapCat
     , foldCat
+
+    , CatR (IdR)
+    , arrCatR
+    , foldCatR
       -- * Free category (CPS style)
     , C (..)
     , toC
@@ -63,6 +70,8 @@ import           Data.Semigroup (Semigroup (..))
 #endif
 
 import           Control.Category.Free.Internal
+import           Unsafe.Coerce (unsafeCoerce)
+
 --
 -- Free categories based on real time queues; Ideas after E.Kmett's guanxi
 -- project.
@@ -158,6 +167,92 @@ instance Monoid (Cat f o o) where
 #if __GLASGOW_HASKELL__ < 804
     mappend = (<>)
 #endif
+
+
+-- | Optimised version of a free category.
+--
+-- It is optimised for building a morphism from left to right (e.g. with 'foldr' and
+-- @('.')@).  The performence benefits were only seen with @-O1@ or @-O2@,
+-- though the @-O2@ performance might not be what you expect: morphisms build
+-- with right fold are fast, but when left folding is used the performance
+-- drasticly decrease (this was not observed with @-O1@).
+--
+data CatR (f :: k -> k -> *) a b where
+    IdR  :: CatR f a a
+    CatR :: Queue (CatR (Op f)) c b
+         -> Op f b a
+         -> CatR f a c
+
+arrCatR :: forall (f :: k -> k -> *) a b.
+         f a b
+      -> CatR f a b
+arrCatR ab = CatR emptyQ (Op ab)
+{-# INLINE arrCatR #-}
+
+instance Category (CatR f) where
+    id = IdR
+
+    f . CatR q (g :: Op g x a)
+              = CatR (q `snoc` op f) g
+    IdR . f   = f
+    f   . IdR = f
+    {-# INLINE (.) #-}
+
+foldCatR :: forall f c a b.
+            Category c
+         => (forall x y. f x y -> c x y)
+         -> CatR f a b
+         -> c a b
+foldCatR _nat IdR = id
+foldCatR nat  (CatR q0 (Op tr0)) =
+    case q0 of
+      NilQ         -> nat tr0
+      ConsQ IdR q' -> go q' . nat tr0
+      ConsQ c   q' -> go q' . foldCatR nat (unOp c) . nat tr0
+  where
+    -- like foldQ
+    go :: Queue (CatR (Op f)) x y -> c y x
+    go q = case q of
+      NilQ        -> id
+      ConsQ zy q' -> go q' . foldCatR nat (unOp zy)
+    {-# INLINE go #-}
+{-# INLINE foldCatR #-}
+
+-- TODO: add a proof that unsafeCoerce is safe
+op :: forall (f :: k -> k -> *) x y.
+      CatR f x y
+   -> CatR (Op f) y x
+op = unsafeCoerce
+-- op IdR = IdR
+-- op (CatR q tr) = CatR emptyQ (Op tr) . foldQ id q
+{-# INLINE op #-}
+
+-- TODO: add a proof that unsafeCoerce is safe
+unOp :: forall (f :: k -> k -> *) x y.
+        CatR (Op f) x y
+     -> CatR f y x
+unOp = unsafeCoerce
+-- unOp IdR = IdR
+-- unOp (CatR q (Op tr)) = CatR emptyQ tr . foldQ unDual q
+{-# INLINE unOp #-}
+
+{-
+dual :: forall (f :: k -> k -> *) x y.
+        CatR f x y
+     -> CatR (Op (Op f)) x y
+dual IdR = IdR
+dual (CatR q tr) = CatR (hoistQ dual q) (Op (Op tr))
+{-# INLINE dual #-}
+
+-- this is clearly safe
+unDual :: forall (f :: k -> k -> *) x y.
+          CatR (Op (Op f)) x y
+       -> CatR f x y
+unDual = unsafeCoerce
+-- unDual IdR = IdR
+-- unDual (CatR q (Op (Op tr))) = CatR (hoistQ unDual q) tr
+{-# INLINE unDual #-}
+-}
 
 --
 -- CPS style free categories
