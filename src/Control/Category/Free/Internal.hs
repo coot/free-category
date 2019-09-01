@@ -4,6 +4,7 @@
 {-# LANGUAGE PatternSynonyms       #-}
 {-# LANGUAGE PolyKinds             #-}
 {-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE ViewPatterns          #-}
 
@@ -37,6 +38,8 @@ module Control.Category.Free.Internal
   , uncons
   , snoc
   , foldQ
+  , foldrQ
+  , foldlQ
   , hoistQ
   , zipWithQ
   ) where
@@ -225,7 +228,18 @@ pattern NilQ <- (uncons -> EmptyL) where
 {-# complete NilQ, ConsQ #-}
 #endif
 
--- | Efficient fold of a queue into a category.
+-- | 'foldr' of a 'Queue'
+--
+foldrQ :: forall (f :: k -> k -> *) c a b d.
+          (forall x y z. f y z -> c x y -> c x z)
+       -> c a b
+       -> Queue f b d
+       -> c a d
+foldrQ _nat ab NilQ          = ab
+foldrQ  nat ab (ConsQ xd bx) = nat xd (foldrQ nat ab bx)
+{-# INLINE foldrQ #-}
+
+-- | Efficient fold of a queue into a category, analogous to 'foldM'.
 --
 -- /complexity/ @O\(n\)@
 --
@@ -234,10 +248,21 @@ foldQ :: forall (f :: k -> k -> *) c a b.
       => (forall x y. f x y -> c x y)
       -> Queue f a b
       -> c a b
-foldQ nat q = case q of
-    NilQ        -> id
-    ConsQ tr q' -> nat tr . foldQ nat q'
+foldQ nat = foldrQ (\f c -> nat f . c) id
 {-# INLINE foldQ #-}
+
+-- | 'foldl' of a 'Queue'
+--
+-- TODO: make it strict, like 'foldl''.
+--
+foldlQ :: forall (f :: k -> k -> *) c a b d.
+          (forall x y z. c y z -> f x y -> c x z)
+       -> c b d
+       -> Queue f a b
+       -> c a d
+foldlQ _nat bd NilQ          = bd
+foldlQ  nat bd (ConsQ xb ax) = foldlQ nat (nat bd xb) ax
+{-# INLINE foldlQ #-}
 
 zipWithQ :: forall f g a b a' b'.
         Category f
