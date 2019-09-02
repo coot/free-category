@@ -114,6 +114,10 @@ lengthListTr (ConsTr _ xs) = 1 + lengthListTr xs
 instance (forall (x :: k) (y :: k). Show (f x y)) => Show (ListTr f a b) where
     show NilTr         = "NilTr"
     show (ConsTr x xs) = "ConsTr " ++ show x ++ " " ++ show xs
+#else
+instance Show (ListTr f a b) where
+    show NilTr         = "NilTr"
+    show (ConsTr _ xs) = "ConsTr _ " ++ show xs
 #endif
 
 instance Category (ListTr f) where
