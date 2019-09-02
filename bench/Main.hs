@@ -83,29 +83,6 @@ main = defaultMain
               (fromListM (arrCat . Add) ints)
         ]
 
-      , bgroup "CatL"
-        [ bench "right right" $
-            whnf
-              (\c -> foldCatL interpret c 0)
-              (fromListR (arrCatL . Add) ints)
-        , bench "right left" $
-            whnf
-              (\c -> foldCatL interpret c 0)
-              (fromListRL (arrCatL . Add) ints)
-        , bench "left left" $
-            whnf
-              (\c -> foldCatL interpret c 0)
-              (fromListL (arrCatL . Add) ints)
-        , bench "left right" $
-            whnf
-              (\c -> foldCatL interpret c 0)
-              (fromListLR (arrCatL . Add) ints)
-        , bench "alternate" $
-            whnf
-              (\c -> foldCatL interpret c 0)
-              (fromListM (arrCatL . Add) ints)
-        ]
-
       , bgroup "ListTr"
         [ bench "right right" $
             whnf

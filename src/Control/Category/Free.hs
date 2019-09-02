@@ -28,12 +28,6 @@ module Control.Category.Free
     , arrCat
     , foldCat
 
-      -- * Free category
-    , CatL (IdL)
-    , arrCatL
-    , mapCatL
-    , foldCatL
-
       -- * Free category (CPS style)
     , C (..)
     , toC
@@ -78,6 +72,11 @@ import           Data.Semigroup (Semigroup (..))
 import           Control.Category.Free.Internal
 import           Unsafe.Coerce (unsafeCoerce)
 
+
+--
+-- Free categories based on real time queues; Ideas after E.Kmett's guanxi
+-- project.
+--
 
 -- | Optimised version of a free category.
 --
@@ -219,108 +218,6 @@ instance FreeAlgebra2 Cat where
 
   codom2  = proof
   forget2 = proof
-
---
--- Free categories based on real time queues; Ideas after E.Kmett's guanxi
--- project.
---
-
--- | Category for which morphism composition has @O\(1\)@ complexity and fold
--- is linear in the number of transitions.
---
--- It has a good behaviour for morhisms build with 'foldl' (right to left).
--- 
-data CatL (f :: k -> k -> *) a b where
-    IdL  :: CatL f a a 
-    CatL :: forall f a b c.
-            f b c
-         -> Queue (CatL f) a b
-         -> CatL f a c 
-
--- | Smart constructor for embeding spanning transitions into 'Cat', the same
--- as @'liftFree2' \@'Cat'@.  It is like 'arr' for 'Arrows'.
---
-arrCatL :: forall (f :: k -> k -> *) a b.
-          f a b
-       -> CatL f a b
-arrCatL fab = CatL fab emptyQ
-{-# INLINE arrCatL #-}
-
--- | Smart constructor 'mapCatL' for morphisms of @'Cat' f@ category.
---
-mapCatL :: forall (f :: k -> k -> *) a b c.
-            f b c
-         -> CatL f a b
-         -> CatL f a c
-mapCatL fbc cab = arrCatL fbc . cab
-
--- | Right fold of 'Cat' into a category, the same as @'foldNatFree2' \@'Cat'@.
---
--- /complexity/: @O\(n\) where @n@ is number of transition embedded in 'Cat'.
-foldCatL :: forall f c a b.
-            Category c
-         => (forall x y. f x y -> c x y)
-         -> CatL f a b
-         -> c a b
-foldCatL _nat IdL = id
-foldCatL nat (CatL tr q) =
-    case q of
-      NilQ         -> nat tr
-      ConsQ IdL q' -> nat tr . foldNatQ (foldCatL nat) q'
-      ConsQ c  q'  -> nat tr . foldCatL nat c . foldNatQ (foldCatL nat) q'
-{-# INLINE foldCatL #-}
-
--- | /complexity/ of composition @('.')@: @O\(1\)@ (worst case)
-instance Category (CatL f) where
-    id = IdL
-
-    CatL f q . h = CatL f (q `snoc` h)
-    IdL . f  = f
-    {-# INLINE (.) #-}
-
-type instance AlgebraType0 CatL f = ()
-type instance AlgebraType  CatL c = Category c
-
--- | /complexity/ of 'foldNatFree2': @O\(n\)@ where @n@ is number of
--- transitions embeded in 'Cat'.
---
-instance FreeAlgebra2 CatL where
-  liftFree2 = arrCatL
-
-  foldNatFree2 = foldCatL
-
-  codom2  = proof
-  forget2 = proof
-
-instance Arrow f => Arrow (CatL f) where
-    arr = arrCatL . arr
-    {-# INLINE arr #-}
-
-    CatL tr q *** CatL tr' q' = CatL (tr *** tr') (zipWithQ (***) q q')
-    CatL tr q *** IdL         = CatL (tr *** arr id) (zipWithQ (***) q NilQ)
-    IdL       *** CatL tr' q' = CatL (arr id *** tr') (zipWithQ (***) NilQ q')
-    IdL       *** IdL         = CatL (arr id *** arr id) NilQ
-    {-# INLINE (***) #-}
-
-instance ArrowZero f => ArrowZero (CatL f) where
-    zeroArrow = arrCatL zeroArrow
-
-instance ArrowChoice f => ArrowChoice (CatL f) where
-    CatL fxb cax +++ CatL fyb cay
-                           = CatL (fxb +++ fyb) (zipWithQ (+++) cax cay)
-    CatL fxb cax +++ IdL   = CatL (fxb +++ arr id) (zipWithQ (+++) cax NilQ)
-    IdL +++ (CatL fxb cax) = CatL (arr id +++ fxb) (zipWithQ (+++) NilQ cax)
-    IdL +++ IdL            = IdL
-    {-# INLINE (+++) #-}
-
-instance Semigroup (CatL f o o) where
-    f <> g = f . g
-
-instance Monoid (CatL f o o) where
-    mempty = IdL
-#if __GLASGOW_HASKELL__ < 804
-    mappend = (<>)
-#endif
 
 --
 -- CPS style free categories

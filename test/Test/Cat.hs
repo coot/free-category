@@ -29,7 +29,6 @@ tests :: TestTree
 tests =
   testGroup "Control.Category.Free"
   [ testProperty "Cat"  prop_Cat
-  , testProperty "CatL" prop_CatL
   , testProperty "C"    prop_C
   ]
 
@@ -185,9 +184,9 @@ instance Arbitrary ArbListTr where
 
 
 --
--- test 'Cat', 'CatL' and 'C' treating 'ListTr' as a model to compare to.
+-- test 'Cat' and 'C' treating 'ListTr' as a model to compare to.
 --
-prop_Cat, prop_CatL, prop_C
+prop_Cat, prop_C
     :: Blind ArbListTr -> Bool
 
 
@@ -201,20 +200,6 @@ prop_Cat (Blind (ArbListTr listTr SInteger _)) =
       foldNatFree2 interpretTr listTr 0
 prop_Cat (Blind (ArbListTr listTr SNatural _)) =
       foldNatFree2 interpretTr (hoistFreeH2 @_ @Cat listTr) 0
-    ==
-      foldNatFree2 interpretTr listTr 0
-
-
-prop_CatL (Blind (ArbListTr listTr SInt _)) =
-      foldNatFree2 interpretTr (hoistFreeH2 @_ @CatL listTr) 0
-    ==
-      foldNatFree2 interpretTr listTr 0
-prop_CatL (Blind (ArbListTr listTr SInteger _)) =
-      foldNatFree2 interpretTr (hoistFreeH2 @_ @CatL listTr) 0
-    ==
-      foldNatFree2 interpretTr listTr 0
-prop_CatL (Blind (ArbListTr listTr SNatural _)) =
-      foldNatFree2 interpretTr (hoistFreeH2 @_ @CatL listTr) 0
     ==
       foldNatFree2 interpretTr listTr 0
 
