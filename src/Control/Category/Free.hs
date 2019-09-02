@@ -123,6 +123,12 @@ foldCat nat (Cat q0 (Op tr0)) =
 {-# INLINE foldCat #-}
 
 -- TODO: add a proof that unsafeCoerce is safe
+-- > op Id = Id  -- this is ok
+-- > op (Cat q (Op tr))
+-- >   = tr₀@(Cat emptyQ (Op tr)) . foldNatQ unDual q
+--     -- we assume that q contains Op (Op tr₁),…, Op (Op trₙ)
+-- >   = tr₀ . tr₁@(Cat q₁` tr₁`) . ⋯ . trₙ@(Cat qₙ` trₙ`)
+-- >   = Cat (qₙ` :> trₙ₋₁ :> ⋯ :> tr₀) trₙ`
 op :: forall (f :: k -> k -> *) x y.
       Cat f x y
    -> Cat (Op f) y x
