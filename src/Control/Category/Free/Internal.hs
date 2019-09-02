@@ -303,9 +303,9 @@ hoistQ :: forall (f :: k -> k -> *)
           (forall x y. f x y -> g x y)
        -> Queue f a b
        -> Queue g a b
-hoistQ nat queue = case queue of
-    NilQ            -> NilQ
-    ConsQ tr queue' -> ConsQ (nat tr) (hoistQ nat queue')
+hoistQ nat q = case q of
+    NilQ        -> NilQ
+    ConsQ tr q' -> ConsQ (nat tr) (hoistQ nat q')
 
 --
 -- Internal API

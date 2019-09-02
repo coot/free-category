@@ -41,6 +41,7 @@ instance Show (Tr a b) where
 instance Arbitrary (Tr 'K 'K) where
     arbitrary = A <$> arbitrary
 
+
 toList :: Queue Tr 'K 'K -> [Tr 'K 'K]
 toList q = case q of
     ConsQ a@A{} as -> a : toList as
@@ -50,6 +51,7 @@ toList q = case q of
 fromList :: [Tr 'K 'K] -> Queue Tr 'K 'K
 fromList []              = NilQ
 fromList (a : as) = ConsQ a (fromList as)
+
 
 instance Arbitrary (Queue Tr 'K 'K) where
     arbitrary = fromList <$> arbitrary
