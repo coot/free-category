@@ -45,6 +45,32 @@ library
     -fwarn-deprecations
   default-language: Haskell2010
 
+test-suite test-cats
+  type:
+      exitcode-stdio-1.0
+  hs-source-dirs:
+      test
+  main-is:
+      Main.hs
+  other-modules:
+      Test.Queue
+  default-language: Haskell2010
+  build-depends:
+      base
+    , QuickCheck
+    , tasty-quickcheck
+    , tasty
+    , free-algebras
+
+    , free-category
+  ghc-options:
+    -Wall
+    -fwarn-incomplete-record-updates
+    -fwarn-incomplete-uni-patterns
+    -fno-ignore-asserts
+    -fwarn-deprecations
+  default-language: Haskell2010
+
 benchmark bench-cats
   hs-source-dirs:
       bench
