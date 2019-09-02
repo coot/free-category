@@ -183,7 +183,22 @@ data Queue (f :: k -> k -> *) (a :: k) (b :: k) where
 #if __GLASGOW_HASKELL__ >= 806
 instance (forall (x :: k) (y :: k). Show (f x y))
       => Show (Queue f a b) where
-    show (Queue f r s) = "Queue (" ++ show f ++ ") (" ++ show r ++ ") " ++ show (lengthListTr s)
+    show (Queue f r s) =
+        "Queue ("
+        ++ show f
+        ++ ") ("
+        ++ show r
+        ++ ") "
+        ++ show (lengthListTr s)
+#else
+instance Show (Queue f r s) where
+    show (Queue f r s) =
+        "Queue "
+      ++ show (lengthListTr f)
+      ++ " "
+      ++ show (lengthListTr r)
+      ++ " "
+      ++ show (lengthListTr s)
 #endif
 
 emptyQ :: Queue (f :: k -> k -> *) a a
