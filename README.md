@@ -20,9 +20,9 @@ an effectful one.
 
 Check performence characteristics of various presentations free categories:
 
-* [raport-O0](/bench/raport-O0.md)
-* [raport-O1](/bench/raport-O1.md)
-* [raport-O2](/bench/raport-O2.md)
+* [report-O0](/bench/raport-O0.md)
+* [report-O1](/bench/raport-O1.md)
+* [report-O2](/bench/raport-O2.md)
 
 ## Some examples
 * [LoginStateMachine](https://github.com/coot/free-category/blob/master/examples/src/LoginStateMachine.hs):
