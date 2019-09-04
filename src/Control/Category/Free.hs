@@ -118,7 +118,6 @@ foldCat nat (Cat q0 tr0) =
     go q = case q of
       NilQ        -> id
       ConsQ zy q' -> go q' . foldCat nat (unOp zy)
-    {-# INLINE go #-}
 {-# INLINE foldCat #-}
 
 -- TODO: add a proof that unsafeCoerce is safe
@@ -167,10 +166,9 @@ instance Category (Cat f) where
     id = Id
 
     f . Cat q (g :: g x a)
-             = Cat (q `snoc` op f) g
-    Id . f   = f
-    f   . Id = f
-    {-# INLINE (.) #-}
+            = Cat (q `snoc` op f) g
+    Id . f  = f
+    f  . Id = f
 
 instance Arrow f => Arrow (Cat f) where
     arr = arrCat . arr
