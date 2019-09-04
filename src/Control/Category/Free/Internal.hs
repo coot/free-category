@@ -163,7 +163,6 @@ instance FreeAlgebra2 ListTr where
 
   foldNatFree2 _   NilTr     = id
   foldNatFree2 fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
-  {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
   forget2 = proof
@@ -256,7 +255,6 @@ foldrQ :: forall (f :: k -> k -> *) c a b d.
        -> c a d
 foldrQ _nat ab NilQ          = ab
 foldrQ  nat ab (ConsQ xd bx) = nat xd (foldrQ nat ab bx)
-{-# INLINE foldrQ #-}
 
 -- | Efficient fold of a queue into a category, analogous to 'foldM'.
 --
@@ -281,7 +279,6 @@ foldlQ :: forall (f :: k -> k -> *) c a b d.
        -> c a d
 foldlQ _nat bd NilQ          = bd
 foldlQ  nat bd (ConsQ xb ax) = foldlQ nat (nat bd xb) ax
-{-# INLINE foldlQ #-}
 
 zipWithQ :: forall f g a b a' b'.
         Category f
@@ -320,10 +317,9 @@ exec xs ys (ConsTr _ t) = Queue xs ys t
 exec xs ys NilTr        = Queue xs' NilTr xs'
   where
     xs' = rotate xs ys NilTr
-{-# INLINE exec #-}
+{-# INLINABLE exec #-}
 
 rotate :: ListTr f c d -> ListTr (Op f) c b -> ListTr f a b -> ListTr f a d
 rotate NilTr         (ConsTr (Op f) NilTr) a = ConsTr f a
 rotate (ConsTr f fs) (ConsTr (Op g) gs)    a = ConsTr f (rotate fs gs (ConsTr g a))
 rotate _             _                     _ = error "Queue.rotate: impossible happend"
-{-# INLINE rotate #-}
