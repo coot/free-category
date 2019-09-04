@@ -92,13 +92,13 @@ import           Unsafe.Coerce (unsafeCoerce)
 data Cat (f :: k -> k -> *) a b where
     Id  :: Cat f a a
     Cat :: Queue (Cat (Op f)) c b
-        -> Op f b a
+        -> f a b
         -> Cat f a c
 
 arrCat :: forall (f :: k -> k -> *) a b.
           f a b
        -> Cat f a b
-arrCat ab = Cat emptyQ (Op ab)
+arrCat ab = Cat emptyQ ab
 {-# INLINE arrCat #-}
 
 foldCat :: forall f c a b.
@@ -107,7 +107,7 @@ foldCat :: forall f c a b.
         -> Cat f a b
         -> c a b
 foldCat _nat Id = id
-foldCat nat (Cat q0 (Op tr0)) =
+foldCat nat (Cat q0 tr0) =
     case q0 of
       NilQ        -> nat tr0
       ConsQ Id q' -> go q' . nat tr0
@@ -123,7 +123,7 @@ foldCat nat (Cat q0 (Op tr0)) =
 
 -- TODO: add a proof that unsafeCoerce is safe
 -- > op Id = Id  -- this is ok
--- > op (Cat q (Op tr))
+-- > op (Cat q tr)
 -- >   = tr₀@(Cat emptyQ (Op tr)) . foldNatQ unDual q
 --     -- we assume that q contains Op (Op tr₁),…, Op (Op trₙ)
 -- >   = tr₀ . tr₁@(Cat q₁` tr₁`) . ⋯ . trₙ@(Cat qₙ` trₙ`)
@@ -157,16 +157,16 @@ dual (Cat q tr) = Cat (hoistQ dual q) (Op (Op tr))
 unDual :: forall (f :: k -> k -> *) x y.
           Cat (Op (Op f)) x y
        -> Cat f x y
-unDual = unsafeCoerce
--- unDual Id = Id
--- unDual (Cat q (Op (Op tr))) = Cat (hoistQ unDual q) tr
+-- unDual = unsafeCoerce
+unDual Id = Id
+unDual (Cat q (Op (Op tr))) = Cat (hoistQ unDual q) tr
 {-# INLINE unDual #-}
 -}
 
 instance Category (Cat f) where
     id = Id
 
-    f . Cat q (g :: Op g x a)
+    f . Cat q (g :: g x a)
              = Cat (q `snoc` op f) g
     Id . f   = f
     f   . Id = f
@@ -176,32 +176,32 @@ instance Arrow f => Arrow (Cat f) where
     arr = arrCat . arr
     {-# INLINE arr #-}
 
-    Cat q (Op  tr) *** Cat q' (Op tr') =
+    Cat q tr *** Cat q' tr' =
       Cat (zipWithQ (\x y -> op (unOp x *** unOp y)) q q')
-          (Op $ tr *** tr')
-    Cat q (Op tr) *** Id =
+          (tr *** tr')
+    Cat q tr *** Id =
       Cat (zipWithQ (\x y -> op (unOp x *** unOp y)) q NilQ)
-          (Op $ tr *** arr id)
-    Id *** Cat q' (Op tr')  =
+          (tr *** arr id)
+    Id *** Cat q' tr'  =
       Cat (zipWithQ (\x y -> op (unOp x *** unOp y)) NilQ q')
-          (Op $ arr id *** tr')
+          (arr id *** tr')
     Id       *** Id =
-      Cat NilQ (Op $ arr id *** arr id)
+      Cat NilQ (arr id *** arr id)
     {-# INLINE (***) #-}
 
 instance ArrowZero f => ArrowZero (Cat f) where
     zeroArrow = arrCat zeroArrow
 
 instance ArrowChoice f => ArrowChoice (Cat f) where
-    Cat xb (Op ax) +++ Cat yb (Op ay) =
+    Cat xb ax +++ Cat yb ay =
       Cat (zipWithQ (\x y -> op (unOp x +++ unOp y)) xb yb)
-          (Op $ ax +++ ay)
-    Cat xb (Op ax) +++ Id =
+          (ax +++ ay)
+    Cat xb ax +++ Id =
       Cat (zipWithQ (\x y -> op (unOp x +++ unOp y)) xb NilQ)
-          (Op $ ax +++ arr id)
-    Id +++ (Cat xb (Op ax)) =
+          (ax +++ arr id)
+    Id +++ (Cat xb ax) =
       Cat (zipWithQ (\x y -> op (unOp x +++ unOp y)) NilQ xb)
-          (Op $ arr id +++ ax)
+          (arr id +++ ax)
     Id +++ Id = Id
     {-# INLINE (+++) #-}
 
