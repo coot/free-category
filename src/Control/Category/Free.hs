@@ -95,6 +95,14 @@ data Cat (f :: k -> k -> *) a b where
         -> f a b
         -> Cat f a c
 
+instance Category (Cat f) where
+    id = Id
+
+    f . Cat q (g :: g x a)
+            = Cat (q `snoc` op f) g
+    Id . f  = f
+    f  . Id = f
+
 arrCat :: forall (f :: k -> k -> *) a b.
           f a b
        -> Cat f a b
@@ -161,14 +169,6 @@ unDual Id = Id
 unDual (Cat q (Op (Op tr))) = Cat (hoistQ unDual q) tr
 {-# INLINE unDual #-}
 -}
-
-instance Category (Cat f) where
-    id = Id
-
-    f . Cat q (g :: g x a)
-            = Cat (q `snoc` op f) g
-    Id . f  = f
-    f  . Id = f
 
 instance Arrow f => Arrow (Cat f) where
     arr = arrCat . arr
