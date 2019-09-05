@@ -36,7 +36,7 @@ module Control.Category.Free
       -- * Naive version of a free category
     , ListTr (..)
 
-      -- * Oposite category
+      -- * Opposite category
     , Op (..)
     , hoistOp
       -- * Free interface re-exports
@@ -84,10 +84,32 @@ import           Unsafe.Coerce (unsafeCoerce)
 -- of transitions.
 --
 -- It is optimised for building a morphism from left to right (e.g. with 'foldr' and
--- @('.')@).  The performence benefits were only seen with @-O1@ or @-O2@,
+-- @('.')@).  The performance benefits were only seen with @-O1@ or @-O2@,
 -- though the @-O2@ performance might not be what you expect: morphisms build
 -- with right fold are fast, but when left folding is used the performance
--- drasticly decrease (this was not observed with @-O1@).
+-- drastically decrease (this was not observed with @-O1@).
+--
+-- The internal representation is using type aligned 'Queue', a morphism
+-- `a → c` is represented as a tuple:
+--
+-- @
+-- a → c = ( a → b
+--         , b ← b₁ : b₂ ← b₃ : ⋯ : bₙ₋₁ ← c : NilQ :: Queue (Cat (Op f) c b)
+--         )
+-- @
+--
+-- where ← arrows represent arrows in `Cat (Op f)`
+-- thus we can think of this representation as (though this would not type
+-- check)
+--
+-- @
+-- a → c ~ ( a → b
+--         , b → b₁ : b₂ → b₃ : ⋯ : bₙ₋₁ → c : NilQ
+--         )
+-- @
+--
+-- Type aligned 'Queue's have efficient 'snoc' and 'uncons' operations which
+-- allow to implement efficient composition and folding for 'Cat'.
 --
 data Cat (f :: k -> k -> *) a b where
     Id  :: Cat f a a
@@ -225,7 +247,7 @@ type instance AlgebraType0 Cat f = ()
 type instance AlgebraType  Cat c = Category c
 
 -- | /complexity/ of 'foldNatFree2': @O\(n\)@ where @n@ is number of
--- transitions embeded in 'Cat'.
+-- transitions embedded in 'Cat'.
 --
 instance FreeAlgebra2 Cat where
   liftFree2 = arrCat
@@ -265,7 +287,7 @@ toC = hoistFreeH2
 {-# INLINE toC #-}
 
 -- |
--- Inverse of @'fromC'@, which also is a specialisatin of @'hoistFreeH2'@.
+-- Inverse of @'fromC'@, which also is a specialisation of @'hoistFreeH2'@.
 fromC :: C f a b -> ListTr f a b
 fromC = hoistFreeH2
 {-# INLINE fromC #-}
