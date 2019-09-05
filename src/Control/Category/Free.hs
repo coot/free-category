@@ -128,22 +128,58 @@ foldCat nat (Cat q0 tr0) =
       ConsQ zy q' -> go q' . foldCat nat (unOp zy)
 {-# INLINE foldCat #-}
 
--- TODO: add a proof that unsafeCoerce is safe
--- > op Id = Id  -- this is ok
+-- | 'op' can be defined as
+--
+-- @
+-- op :: Cat f x y -> Cat (Op f) y x
+-- op Id = Id
+-- op (Cat q tr) = Cat emptyQ (Op tr) . foldNatQ unDual q
+-- @
+--
+-- where
+--
+-- @
+-- unDual :: forall (f :: k -> k -> *) x y.
+--           Cat (Op (Op f)) x y
+--        -> Cat f x y
+-- unDual Id = Id
+-- unDual (Cat q (Op (Op tr))) = Cat (hoistQ unDual q) tr
+-- @
+--
+-- But instead we use `unsafeCoerce`, which is safe by the following argument.
+-- We use `l ~ r` to say that the left and right hand side have the same
+-- representation.  We want to show that `op g ~ g` for any `g :: Cat f x y`
+--
+-- It is easy to observe that `unDual g ~ g` for any `x :: Cat (Op (Op f)) x y`.
+--
+-- > op Id = Id
+-- >       ~ Id
 -- > op (Cat q tr)
--- >   = tr₀@(Cat emptyQ (Op tr)) . foldNatQ unDual q
---     -- we assume that q contains Op (Op tr₁),…, Op (Op trₙ)
--- >   = tr₀ . tr₁@(Cat q₁` tr₁`) . ⋯ . trₙ@(Cat qₙ` trₙ`)
--- >   = Cat (qₙ` :> trₙ₋₁ :> ⋯ :> tr₀) trₙ`
+-- >   = c₀@(Cat emptyQ (Op tr)) . foldNatQ unDual q
+-- >        Note that `.` here denotes composition in `Cat (Op f)`.
+-- >        Let us assume that `q = c₁ : c₂ :  ⋯  : cₙ : NilQ`,
+-- >        where each `cᵢ :: Cat (Op (Op tr)) aᵢ aᵢ₊₁`
+-- >        unfolding 'foldNatQ' gives us
+-- >   = c₀ . unDual c₁ . ⋯ . unDual cₙ
+-- >        `unDual cᵢ :: Cat tr aᵢ aᵢ₊₁` has the same representation as cᵢ,
+-- >        at this step we also need to rewrite `.` composition in
+-- >        `Cat (Op f)` using composition in `Cat f`, this reverses the order
+-- >   ~ cₙ . ⋯ . c₁ . Cat emptyQ tr
+-- >        By definition of composition in `Cat f`
+-- >   = Cat q tr
+--
+-- This proves that `op` does not change the representation and thus it is safe
+-- to use `unsafeCoerce` instead.
+--
 op :: forall (f :: k -> k -> *) x y.
       Cat f x y
    -> Cat (Op f) y x
 op = unsafeCoerce
--- op Id = Id
--- op (Cat q tr) = Cat emptyQ (Op tr) . foldNatQ id q
 {-# INLINE op #-}
 
--- TODO: add a proof that unsafeCoerce is safe
+-- | Since `op` is an identity, it inverse `unOp` must be too.  Thus we can
+-- also use `unsafeCoerce`.
+--
 unOp :: forall (f :: k -> k -> *) x y.
         Cat (Op f) x y
      -> Cat f y x
@@ -151,24 +187,6 @@ unOp = unsafeCoerce
 -- unOp Id = Id
 -- unOp (Cat q (Op tr)) = Cat emptyQ tr . foldNatQ unDual q
 {-# INLINE unOp #-}
-
-{-
-dual :: forall (f :: k -> k -> *) x y.
-        Cat f x y
-     -> Cat (Op (Op f)) x y
-dual Id = Id
-dual (Cat q tr) = Cat (hoistQ dual q) (Op (Op tr))
-{-# INLINE dual #-}
-
--- this is clearly safe
-unDual :: forall (f :: k -> k -> *) x y.
-          Cat (Op (Op f)) x y
-       -> Cat f x y
--- unDual = unsafeCoerce
-unDual Id = Id
-unDual (Cat q (Op (Op tr))) = Cat (hoistQ unDual q) tr
-{-# INLINE unDual #-}
--}
 
 instance Arrow f => Arrow (Cat f) where
     arr = arrCat . arr
