@@ -89,12 +89,14 @@ instance Category f => Monoid (Op f o o) where
     mappend = (<>)
 #endif
 
--- |
--- Free category encoded as a recursive data type, in a simlar way as
--- @'Control.Monad.Free.Free'@.  You can use @'FreeAlgebra2'@ class instance:
+-- | Simple representation of a free category by using type aligned
+-- lists.  This is not a surprise as free monoids can be represented by
+-- lists (up to laziness)
 --
--- prop> liftFree2    @Cat :: f a b -> Cat f ab
--- prop> foldNatFree2 @Cat :: Category d => (forall x y. f x y -> d x y) -> Cat f a b -> d a b
+-- 'ListTr' has @'FreeAlgebra2'@ class instance:
+--
+-- prop> liftFree2    @ListTr :: f a b -> ListTr f ab
+-- prop> foldNatFree2 @ListTr :: Category d => (forall x y. f x y -> d x y) -> ListTr f a b -> d a b
 --
 -- The same performance concerns that apply to @'Control.Monad.Free.Free'@
 -- apply to this encoding of a free category.
