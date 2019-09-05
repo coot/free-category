@@ -1,12 +1,16 @@
 {-# LANGUAGE CPP                   #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE GADTs                 #-}
-#if __GLASGOW_HASKELL__ >= 806
-{-# LANGUAGE QuantifiedConstraints #-}
-#endif
+{-# LANGUAGE KindSignatures        #-}
+{-# LANGUAGE PolyKinds             #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TupleSections         #-}
 {-# LANGUAGE UndecidableInstances  #-}
+#if __GLASGOW_HASKELL__ >= 806
+{-# LANGUAGE QuantifiedConstraints #-}
+#endif
 
 {-# OPTIONS_GHC -Wno-orphans #-}
 
@@ -14,6 +18,11 @@ module Test.Cat (tests) where
 
 import           Prelude hiding ((.), id)
 import           Control.Category
+import           Data.Function (on)
+#if __GLASGOW_HASKELL__ < 804
+import           Data.Monoid (Monoid (..))
+import           Data.Semigroup (Semigroup (..))
+#endif
 import           Text.Show.Functions ()
 import           Numeric.Natural (Natural)
 
@@ -30,6 +39,19 @@ tests =
   testGroup "Control.Category.Free"
   [ testProperty "Cat"  prop_Cat
   , testProperty "C"    prop_C
+  , testGroup "Category laws"
+    [ testProperty "Cat id"               prop_id_Cat
+    , testProperty "Cat associativity"    prop_associativity_Cat
+    , testProperty "C id"                 prop_id_C
+    , testProperty "C associativity"      prop_associativity_C
+    , testProperty "ListTr id"            prop_id_ListTr
+    , testProperty "ListTr associativity" prop_associativity_ListTr
+    ]
+  , testGroup "foldFree2 and foldMap"
+    [ testProperty "foldFree Cat"    prop_foldCat
+    , testProperty "foldFree C"      prop_foldC
+    , testProperty "foldFree ListTr" prop_foldListTr
+    ]
   ]
 
 
@@ -216,3 +238,172 @@ prop_C (Blind (ArbListTr listTr SNatural _)) =
       foldNatFree2 interpretTr (hoistFreeH2 @_ @C listTr) 0
     ==
       foldNatFree2 interpretTr listTr 0
+
+--
+-- Test Category Laws
+-- @
+--  f . id == f == id . f
+--  f . g . h == (f . g) . h
+-- @
+--
+
+prop_id :: Category c
+        => (c a b -> c a b -> Bool)
+        -> c a b
+        -> Bool
+prop_id eqCat f = eqCat (f . id) f && eqCat (id . f) f
+
+prop_associativity :: Category c
+                   => (c x w -> c x w -> Bool)
+                   -> c z w -> c y z -> c x y
+                   -> Bool
+prop_associativity eqCat f g h =
+    (f . g . h) `eqCat` ((f . g) . h)
+
+
+-- | Integers form commutative monoid, and thus a category (a groupoid to be
+-- precise) with a single object.
+--
+data IntCat (a :: ()) (b :: ()) where
+     IntCat :: Int -> IntCat a a
+
+instance Show (IntCat a b) where
+    show (IntCat i) = "IntCat " ++ show i
+
+instance Eq (IntCat a b) where
+    IntCat i  == IntCat j = i == j
+
+instance Category IntCat where
+    id = IntCat 0
+    IntCat a . IntCat b = IntCat (a + b)
+
+instance Semigroup (IntCat '() '()) where
+    IntCat a <> IntCat b = IntCat (a + b)
+
+instance Monoid (IntCat '() '()) where
+    mempty = IntCat 0
+#if __GLASGOW_HASKELL__ < 804
+    mappend = (<>)
+#endif
+
+instance Arbitrary (IntCat '() '()) where
+    arbitrary = IntCat <$> arbitrary
+
+fromList :: forall (a :: k) m f.
+            ( FreeAlgebra2 m
+            , AlgebraType0 m f
+            , Category    (m f)
+            ) => [f a a] -> m f a a
+fromList [] = id
+fromList (f : fs) = liftFree2 f . fromList fs
+
+toList :: ( FreeAlgebra2 m
+          , AlgebraType0 m IntCat
+          , AlgebraType  m (ListTr IntCat)
+          )
+       => m IntCat '() '()
+       -> [IntCat '() '()]
+toList c = go (hoistFreeH2 c)
+  where
+    go :: ListTr IntCat '() '() -> [IntCat '() '()]
+    go NilTr = []
+    go (ConsTr tr@IntCat{} xs) = tr : go xs
+
+
+--
+-- 'Cat' cateogry laws
+--
+
+newtype ArbIntCat = ArbIntCat (Cat IntCat '() '())
+
+instance Show ArbIntCat where
+    show (ArbIntCat c) = show (toList c)
+
+instance Arbitrary ArbIntCat where
+    arbitrary = ArbIntCat . fromList <$> arbitrary
+    shrink (ArbIntCat c) =
+      map (ArbIntCat . fromList)
+          $ shrinkList (const [])
+          $ toList c
+
+prop_id_Cat :: ArbIntCat -> Bool
+prop_id_Cat (ArbIntCat f) =
+    prop_id (on (==) toList) f
+  
+prop_associativity_Cat
+    :: ArbIntCat -> ArbIntCat -> ArbIntCat
+    -> Bool
+prop_associativity_Cat (ArbIntCat f0)
+                       (ArbIntCat f1)
+                       (ArbIntCat f2) =
+      prop_associativity (on (==) toList) f0 f1 f2
+
+--
+-- 'C' category laws
+--
+
+newtype ArbIntC = ArbIntC (C IntCat '() '())
+
+instance Arbitrary ArbIntC where
+    arbitrary = ArbIntC . fromList <$> arbitrary
+    shrink (ArbIntC c) =
+      map (ArbIntC . fromList)
+          $ shrinkList (const [])
+          $ toList c
+
+prop_id_C :: Blind ArbIntC -> Bool
+prop_id_C (Blind (ArbIntC f)) =
+    prop_id (on (==) toList) f
+  
+prop_associativity_C
+    :: Blind ArbIntC -> Blind ArbIntC -> Blind ArbIntC
+    -> Bool
+prop_associativity_C (Blind (ArbIntC f0))
+                     (Blind (ArbIntC f1))
+                     (Blind (ArbIntC f2)) =
+      prop_associativity (on (==) toList) f0 f1 f2
+
+--
+-- 'ListTr' category laws
+--
+
+newtype ArbIntListTr = ArbIntListTr (ListTr IntCat '() '())
+
+instance Show ArbIntListTr where
+    show (ArbIntListTr f) = show (toList f)
+
+instance Arbitrary ArbIntListTr where
+    arbitrary = ArbIntListTr . fromList <$> arbitrary
+    shrink (ArbIntListTr c) =
+      map (ArbIntListTr . fromList)
+          $ shrinkList (const [])
+          $ toList c
+
+prop_id_ListTr :: ArbIntListTr -> Bool
+prop_id_ListTr (ArbIntListTr f) =
+    prop_id (on (==) toList) f
+  
+prop_associativity_ListTr
+    :: ArbIntListTr -> ArbIntListTr -> ArbIntListTr
+    -> Bool
+prop_associativity_ListTr (ArbIntListTr f0)
+                          (ArbIntListTr f1)
+                          (ArbIntListTr f2) =
+      prop_associativity (on (==) toList) f0 f1 f2
+
+
+--
+-- Compatibility between 'foldFree2' and 'foldMap' for 'IntCat'
+--
+
+prop_foldCat :: ArbIntCat -> Bool
+prop_foldCat (ArbIntCat f)
+    = foldFree2 f == foldMap id (toList f)
+
+prop_foldC :: (Blind ArbIntC) -> Bool
+prop_foldC (Blind (ArbIntC f))
+    = foldFree2 f == foldMap id (toList f)
+
+prop_foldListTr :: ArbIntListTr -> Bool
+prop_foldListTr (ArbIntListTr f)
+    = foldFree2 f == foldMap id (toList f)
