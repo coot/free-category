@@ -317,7 +317,7 @@ toList c = go (hoistFreeH2 c)
 newtype ArbIntCat = ArbIntCat (Cat IntCat '() '())
 
 instance Show ArbIntCat where
-    show (ArbIntCat c) = show (toList c)
+    show (ArbIntCat c) = show c
 
 instance Arbitrary ArbIntCat where
     arbitrary = ArbIntCat . fromList <$> arbitrary
@@ -344,6 +344,9 @@ prop_associativity_Cat (ArbIntCat f0)
 
 newtype ArbIntC = ArbIntC (C IntCat '() '())
 
+instance Show ArbIntC where
+    show (ArbIntC c) = show c
+
 instance Arbitrary ArbIntC where
     arbitrary = ArbIntC . fromList <$> arbitrary
     shrink (ArbIntC c) =
@@ -351,16 +354,16 @@ instance Arbitrary ArbIntC where
           $ shrinkList (const [])
           $ toList c
 
-prop_id_C :: Blind ArbIntC -> Bool
-prop_id_C (Blind (ArbIntC f)) =
+prop_id_C :: ArbIntC -> Bool
+prop_id_C (ArbIntC f) =
     prop_id (on (==) toList) f
   
 prop_associativity_C
-    :: Blind ArbIntC -> Blind ArbIntC -> Blind ArbIntC
+    :: ArbIntC -> ArbIntC -> ArbIntC
     -> Bool
-prop_associativity_C (Blind (ArbIntC f0))
-                     (Blind (ArbIntC f1))
-                     (Blind (ArbIntC f2)) =
+prop_associativity_C (ArbIntC f0)
+                     (ArbIntC f1)
+                     (ArbIntC f2) =
       prop_associativity (on (==) toList) f0 f1 f2
 
 --

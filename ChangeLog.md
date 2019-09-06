@@ -25,3 +25,4 @@
     - `FreeEffCat` constructor as `Effect` and `lift` as `effect`
     - `liftCat` to `liftEffect`
     - `foldNatLift` to `foldNatEffCat`
+- Show instance of 'Cat' and 'C' via 'ListTr' (GHC >= 806)

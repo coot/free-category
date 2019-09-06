@@ -1,16 +1,19 @@
-{-# LANGUAGE BangPatterns        #-}
-{-# LANGUAGE CPP                 #-}
-{-# LANGUAGE GADTs               #-}
-{-# LANGUAGE FlexibleInstances   #-}
-{-# LANGUAGE FlexibleContexts    #-}
-{-# LANGUAGE InstanceSigs        #-}
-{-# LANGUAGE PatternSynonyms     #-}
-{-# LANGUAGE PolyKinds           #-}
-{-# LANGUAGE RankNTypes          #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators       #-}
-{-# LANGUAGE TypeFamilies        #-}
-{-# LANGUAGE ViewPatterns        #-}
+{-# LANGUAGE BangPatterns          #-}
+{-# LANGUAGE CPP                   #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE InstanceSigs          #-}
+{-# LANGUAGE PatternSynonyms       #-}
+{-# LANGUAGE PolyKinds             #-}
+{-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE ViewPatterns          #-}
+#if __GLASGOW_HASKELL__ >= 806
+{-# LANGUAGE QuantifiedConstraints #-}
+#endif
 
 {-# OPTIONS_HADDOCK show-extensions #-}
 
@@ -124,6 +127,18 @@ instance Category (Cat f) where
             = Cat (q `snoc` op f) g
     Id . f  = f
     f  . Id = f
+
+#if __GLASGOW_HASKELL__ >= 806
+-- | Show instance via 'ListTr'
+--
+instance (forall x y. Show (f x y)) => Show (Cat f a b) where
+    show c = show (hoistFreeH2 c :: ListTr f a b)
+#else
+-- | Blind show instance via 'ListTr'
+--
+instance Show (Cat f a b) where
+    show c = show (hoistFreeH2 c :: ListTr f a b)
+#endif
 
 arrCat :: forall (f :: k -> k -> *) a b.
           f a b
@@ -280,6 +295,18 @@ instance Category (C f) where
   id = C (const id)
   C bc . C ab = C $ \k -> bc k . ab k
   {-# INLINE (.) #-}
+
+#if __GLASGOW_HASKELL__ >= 806
+-- | Show instance via 'ListTr'
+--
+instance (forall x y. Show (f x y)) => Show (C f a b) where
+    show c = show (hoistFreeH2 c :: ListTr f a b)
+#else
+-- | Blind show instance via 'ListTr'
+--
+instance Show (C f a b) where
+    show c = show (hoistFreeH2 c :: ListTr f a b)
+#endif
 
 -- |
 -- Isomorphism from @'Cat'@ to @'C'@, which is a specialisation of
