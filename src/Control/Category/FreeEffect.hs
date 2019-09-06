@@ -63,8 +63,8 @@ instance Monad m => FreeAlgebra2 (EffCat m) where
   codom2  = proof
   forget2 = proof
 
--- | Wrap a transition into a free category @'Cat'@ and then in
--- @'EffCat'@
+-- | Wrap a transition into a free category 'Cat' and then in
+-- 'EffCat'
 --
 liftEffect :: Monad m => tr a b -> EffCat m (Cat tr) a b
 liftEffect = liftFree2 . liftFree2
@@ -79,9 +79,9 @@ foldNatEffCat
   -> c a b
 foldNatEffCat nat = foldNatFree2 (foldNatFree2 nat)
 
--- |  Functor from @'->'@ category to @'Kleisli' m@.  If @m@ is @Identity@ then
--- it will respect @'lift'@ i.e. @liftKleisli (lift ar) = lift (liftKleisli <$>
--- ar).
+-- |  Functor from @(->)@ category to @'Kleisli' m@.  If @m@ is 'Identity' then
+-- it will respect 'effect' i.e.
+-- @'liftKleisli' ('effect' ar) = 'effect' ('liftKleisli' \<$\> ar)@.
 --
 liftKleisli :: Applicative m => (a -> b) -> Kleisli m a b
 liftKleisli f = Kleisli (pure . f)

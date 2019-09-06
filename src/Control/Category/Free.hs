@@ -265,8 +265,10 @@ instance FreeAlgebra2 Cat where
 -- CPS style encoded free category; one can use @'FreeAlgebra2'@ class
 -- instance:
 --
--- prop> liftFree2    @C :: f a b -> C f a b
--- prop> foldNatFree2 @C :: Category d => (forall x y. f x y -> d x y) -> C f a b -> d a b
+-- > liftFree2    @C :: f a b -> C f a b
+-- > foldNatFree2 @C :: Category d
+-- >                 => (forall x y. f x y -> d x y)
+-- >                 -> C f a b -> d a b
 --
 newtype C f a b
   = C { runC :: forall r. Category r
