@@ -5,7 +5,7 @@ let
           || compiler == "ghc822"
           || compiler == "ghc844"
     then "722fcbbb80b2142583e9266efe77992f8e32ac4c"
-    else "81760f32353fa7f309a49fda17d90f43ac1e9a42";
+    else "57b66eb3f2a0e824c48759f2729370b1b9fd7660";
   url = "https://github.com/NixOS/nixpkgs/archive/${rev}.tar.gz";
   url802 = "https://github.com/NixOS/nixpkgs/archive/${rev802}.tar.gz";
   config =
@@ -18,6 +18,13 @@ let
       in {
         haskell = super.haskell // {
           packages = super.haskell.packages // {
+            ghc881 = super.haskell.packages.ghc881.override {
+              overrides = self: super: {
+                cabal-doctest = super.callPackage ./cabal-doctest-1.0.7.nix {};
+                haskell-src-exts = super.callPackage ./haskell-src-exts-1.21.1.nix {};
+                hedgehog = super.callPackage ./hedgehog-1.0.1.nix {};
+              };
+            };
             ghc844 = super.haskell.packages.ghc844.override { inherit overrides; };
             ghc822 = super.haskell.packages.ghc822.override { inherit overrides; };
             ghc802 = super.haskell.packages.ghc802.override {
