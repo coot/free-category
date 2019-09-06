@@ -95,8 +95,11 @@ instance Category f => Monoid (Op f o o) where
 --
 -- 'ListTr' has @'FreeAlgebra2'@ class instance:
 --
--- prop> liftFree2    @ListTr :: f a b -> ListTr f ab
--- prop> foldNatFree2 @ListTr :: Category d => (forall x y. f x y -> d x y) -> ListTr f a b -> d a b
+-- > liftFree2    @ListTr :: f a b -> ListTr f ab
+-- > foldNatFree2 @ListTr :: Category d
+-- >                      => (forall x y. f x y -> d x y)
+-- >                      -> ListTr f a b
+-- >                      -> d a b
 --
 -- The same performance concerns that apply to @'Control.Monad.Free.Free'@
 -- apply to this encoding of a free category.
