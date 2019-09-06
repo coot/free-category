@@ -47,6 +47,7 @@ module Control.Category.Free
     , wrapFree2
     , foldFree2
     , hoistFree2
+    , hoistFreeH2
     , joinFree2
     , bindFree2
     )
