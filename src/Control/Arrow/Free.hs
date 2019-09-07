@@ -79,7 +79,7 @@ instance Category (Arr f) where
   id = Id
   Id         . f  = f
   f          . Id = f
-  (Cons f g) . h  = Cons f (g `snoc` h)
+  (Cons f g) . h  = Cons f (g `snocQ` h)
   (Arr f g)  . h  = Arr f (g . h)
   (Prod f g) . h  = Prod (f . h) (g . h)
 

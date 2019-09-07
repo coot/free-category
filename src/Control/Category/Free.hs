@@ -112,7 +112,7 @@ import           Unsafe.Coerce (unsafeCoerce)
 --         )
 -- @
 --
--- Type aligned 'Queue's have efficient 'snoc' and 'uncons' operations which
+-- Type aligned 'Queue's have efficient 'snocQ' and 'unconsQ' operations which
 -- allow to implement efficient composition and folding for 'Cat'.
 --
 data Cat (f :: k -> k -> *) a b where
@@ -125,7 +125,7 @@ instance Category (Cat f) where
     id = Id
 
     f . Cat q (g :: g x a)
-            = Cat (q `snoc` op f) g
+            = Cat (q `snocQ` op f) g
     Id . f  = f
     f  . Id = f
 

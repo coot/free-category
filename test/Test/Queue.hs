@@ -20,11 +20,11 @@ import           Test.Tasty.QuickCheck (testProperty)
 tests :: TestTree
 tests =
   testGroup "Queue"
-  [ testProperty "cons"   prop_cons
-  , testProperty "uncons" prop_uncons
-  , testProperty "snoc"   prop_snoc
-  , testProperty "foldr"  (prop_foldr @Int)
-  , testProperty "foldr"  (prop_foldl @Int)
+  [ testProperty "consQ"   prop_consQ
+  , testProperty "unconsQ" prop_unconsQ
+  , testProperty "snocQ"   prop_snocQ
+  , testProperty "foldrQ"  (prop_foldr @Int)
+  , testProperty "foldrQ"  (prop_foldl @Int)
   ]
 
 data K = K
@@ -58,21 +58,21 @@ instance Arbitrary (Queue Tr 'K 'K) where
     shrink q  = map fromList $ shrinkList (const []) (toList q)
 
 
-prop_uncons :: Queue Tr 'K 'K -> Bool
-prop_uncons q = case (q, toList q) of
+prop_unconsQ :: Queue Tr 'K 'K -> Bool
+prop_unconsQ q = case (q, toList q) of
     (ConsQ a@A{} _, a' : _) -> a == a'
     (NilQ, []) -> True
     _          -> False
 
 
-prop_cons :: Tr 'K 'K -> Queue Tr 'K 'K -> Bool
-prop_cons a@A{} q = case cons a q of
+prop_consQ :: Tr 'K 'K -> Queue Tr 'K 'K -> Bool
+prop_consQ a@A{} q = case consQ a q of
     ConsQ a'@A{} _ -> a' == a'
     _              -> False
 
 
-prop_snoc :: Tr 'K 'K -> Queue Tr 'K 'K -> Bool
-prop_snoc a@A{} q = last (toList (q `snoc` a)) == a
+prop_snocQ :: Tr 'K 'K -> Queue Tr 'K 'K -> Bool
+prop_snocQ a@A{} q = last (toList (q `snocQ` a)) == a
 
 
 data TrA a (x :: K) (y :: K) where
