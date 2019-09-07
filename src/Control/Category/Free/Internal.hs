@@ -131,6 +131,28 @@ instance Category (ListTr f) where
   NilTr         . ys = ys
   {-# INLINE (.) #-}
 
+type instance AlgebraType0 ListTr f = ()
+type instance AlgebraType  ListTr c = Category c
+
+instance FreeAlgebra2 ListTr where
+  liftFree2 = \fab -> ConsTr fab NilTr
+  {-# INLINE liftFree2 #-}
+
+  foldNatFree2 _   NilTr     = id
+  foldNatFree2 fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
+
+  codom2  = proof
+  forget2 = proof
+
+instance Semigroup (ListTr f o o) where
+  f <> g = g . f
+
+instance Monoid (ListTr f o o) where
+  mempty = NilTr
+#if __GLASGOW_HASKELL__ < 804
+  mappend = (<>)
+#endif
+
 instance Arrow f => Arrow (ListTr f) where
   arr ab                          = arr ab `ConsTr` NilTr
 
@@ -149,28 +171,6 @@ instance ArrowChoice f => ArrowChoice (ListTr f) where
   (ConsTr fxb cax) +++ NilTr = (fxb +++ arr id) `ConsTr` (cax +++ NilTr)
   NilTr +++ (ConsTr fxb cax) = (arr id +++ fxb) `ConsTr` (NilTr +++ cax)
   NilTr +++ NilTr            = NilTr
-
-instance Semigroup (ListTr f o o) where
-  f <> g = g . f
-
-instance Monoid (ListTr f o o) where
-  mempty = NilTr
-#if __GLASGOW_HASKELL__ < 804
-  mappend = (<>)
-#endif
-
-type instance AlgebraType0 ListTr f = ()
-type instance AlgebraType  ListTr c = Category c
-
-instance FreeAlgebra2 ListTr where
-  liftFree2 = \fab -> ConsTr fab NilTr
-  {-# INLINE liftFree2 #-}
-
-  foldNatFree2 _   NilTr     = id
-  foldNatFree2 fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
-
-  codom2  = proof
-  forget2 = proof
 
 
 -- | Type alligned real time queues; Based on `Purely Functinal Data Structures`
