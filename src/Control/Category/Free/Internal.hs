@@ -174,7 +174,8 @@ instance FreeAlgebra2 ListTr where
 
 
 -- | Type alligned real time queues; Based on `Purely Functinal Data Structures`
--- C.Okasaki.
+-- C.Okasaki.  This the most reliably behaved implementation of free categories
+-- in this package.
 --
 -- Upper bounds of `consQ`, `snocQ`, `unconsQ` are @O\(1\)@ (worst case).
 --
@@ -208,6 +209,52 @@ instance Show (Queue f r s) where
       ++ " "
       ++ show (lengthListTr s)
 #endif
+
+instance Category (Queue f) where
+    id = NilQ
+    ConsQ f q1 . q2 = ConsQ f (q1 . q2)
+    NilQ       . q2 = q2
+
+type instance AlgebraType0 Queue f = ()
+type instance AlgebraType  Queue c = Category c
+
+instance FreeAlgebra2 Queue where
+  liftFree2 = \fab -> ConsQ fab NilQ
+  {-# INLINE liftFree2 #-}
+
+  foldNatFree2 = foldNatQ
+  {-# INLINE foldNatFree2 #-}
+
+  codom2  = proof
+  forget2 = proof
+
+instance Semigroup (Queue f o o) where
+  f <> g = g . f
+
+instance Monoid (Queue f o o) where
+  mempty = NilQ
+#if __GLASGOW_HASKELL__ < 804
+  mappend = (<>)
+#endif
+
+instance Arrow f => Arrow (Queue f) where
+  arr ab = arr ab `ConsQ` NilQ
+
+  (ConsQ fxb cax) *** (ConsQ fyb cay)
+                           = (fxb *** fyb)    `ConsQ` (cax *** cay)
+  (ConsQ fxb cax) *** NilQ = (fxb *** arr id) `ConsQ` (cax *** NilQ)
+  NilQ *** (ConsQ fxb cax) = (arr id *** fxb) `ConsQ` (NilQ *** cax)
+  NilQ *** NilQ            = NilQ
+
+instance ArrowZero f => ArrowZero (Queue f) where
+  zeroArrow = zeroArrow `ConsQ` NilQ
+
+instance ArrowChoice f => ArrowChoice (Queue f) where
+  (ConsQ fxb cax) +++ (ConsQ fyb cay)
+                           = (fxb +++ fyb)    `ConsQ` (cax +++ cay)
+  (ConsQ fxb cax) +++ NilQ = (fxb +++ arr id) `ConsQ` (cax +++ NilQ)
+  NilQ +++ (ConsQ fxb cax) = (arr id +++ fxb) `ConsQ` (NilQ +++ cax)
+  NilQ +++ NilQ            = NilQ
 
 emptyQ :: Queue (f :: k -> k -> *) a a
 emptyQ = Queue NilTr NilTr NilTr
