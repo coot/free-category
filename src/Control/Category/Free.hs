@@ -38,6 +38,7 @@ module Control.Category.Free
       -- * Free Category based on Queue
     , Cat (Id)
     , arrCat
+    , consCat
     , foldCat
 
       -- * Free category (CPS style)
@@ -155,6 +156,13 @@ arrCat :: forall (f :: k -> k -> *) a b.
        -> Cat f a b
 arrCat ab = Cat nilQ ab
 {-# INLINE arrCat #-}
+
+consCat :: forall (f :: k -> k -> *) a b c.
+           f b c
+        -> Cat f a b
+        -> Cat f a c
+consCat bc ab = arrCat bc . ab
+{-# INLINE consCat #-}
 
 foldCat :: forall f c a b.
            Category c
