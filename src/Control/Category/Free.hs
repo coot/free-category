@@ -131,13 +131,19 @@ data Cat (f :: k -> k -> *) a b where
         -> f a b
         -> Cat f a c
 
+compose :: forall (f :: k -> k -> *) x y z.
+           Cat f y z
+        -> Cat f x y
+        -> Cat f x z
+compose f (Cat q g) = Cat (q `snocQ` op f) g
+compose Id f = f
+compose f Id = f
+{-# INLINE [1] compose #-}
+
 instance Category (Cat f) where
     id = Id
-
-    f . Cat q (g :: g x a)
-            = Cat (q `snocQ` op f) g
-    Id . f  = f
-    f  . Id = f
+    (.) = compose
+    {-# INLINE (.) #-}
 
 #if __GLASGOW_HASKELL__ >= 806
 -- | Show instance via 'ListTr'
@@ -155,16 +161,16 @@ arrCat :: forall (f :: k -> k -> *) a b.
           f a b
        -> Cat f a b
 arrCat ab = Cat nilQ ab
-{-# INLINE arrCat #-}
+{-# INLINE [1] arrCat #-}
 
 consCat :: forall (f :: k -> k -> *) a b c.
            f b c
         -> Cat f a b
         -> Cat f a c
 consCat bc ab = arrCat bc . ab
-{-# INLINE consCat #-}
+{-# INLINE [1] consCat #-}
 
-foldCat :: forall f c a b.
+foldCat :: forall (f :: k -> k -> *)c a b.
            Category c
         => (forall x y. f x y -> c x y)
         -> Cat f a b
@@ -181,7 +187,33 @@ foldCat nat (Cat q0 tr0) =
     go q = case q of
       NilQ        -> id
       ConsQ zy q' -> go q' . foldCat nat (unOp zy)
-{-# INLINE foldCat #-}
+{-# INLINE [1] foldCat #-}
+
+{-# RULES
+
+"foldCat/arrCat"
+  forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
+         (g :: f v w)
+         (h :: Cat f u v).
+  foldCat nat (arrCat g `compose` h) = nat g . foldCat nat h
+
+--"foldCat/id"     forall (g :: f v w) (h :: Cat f u v).
+--                 foldCat Prelude.id (arrCat g `compose` h) = g . foldCat id h
+
+-- TODO: These two rules may never fire do to `Class op` rule.
+--
+-- "foldCat/foldMap"
+--   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
+--          (fs :: Monoid (c a a) => [f (a :: k) a]).
+--   foldCat nat (foldMap arrCat fs) = foldMap nat fs
+
+-- "foldCat/foldr"
+--   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
+--          (fs :: Monoid (c a a) => [f (a :: k) a])
+--          (nil :: Cat f a a).
+--   foldCat nat (foldr consCat nil fs) = foldMap nat fs . foldCat nat nil
+
+#-}
 
 -- | 'op' can be defined as
 --
@@ -230,7 +262,7 @@ op :: forall (f :: k -> k -> *) x y.
       Cat f x y
    -> Cat (Op f) y x
 op = unsafeCoerce
-{-# INLINE op #-}
+{-# INLINE [2] op #-}
 
 -- | Since `op` is an identity, it inverse `unOp` must be too.  Thus we can
 -- also use `unsafeCoerce`.
@@ -241,7 +273,19 @@ unOp :: forall (f :: k -> k -> *) x y.
 unOp = unsafeCoerce
 -- unOp Id = Id
 -- unOp (Cat q (Op tr)) = Cat nilQ tr . foldNatQ unDual q
-{-# INLINE unOp #-}
+{-# INLINE [2] unOp #-}
+
+{-# RULES
+
+"op/unOp"
+  forall (x :: Cat (Op f) (x :: k) (y :: k)).
+  op (unOp x) = x
+
+"unOp/op"
+  forall (x :: Cat f (x :: k) (y :: k)).
+  unOp (op x) = x
+
+#-}
 
 instance Arrow f => Arrow (Cat f) where
     arr = arrCat . arr

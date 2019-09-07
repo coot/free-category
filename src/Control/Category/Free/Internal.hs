@@ -269,13 +269,14 @@ instance ArrowChoice f => ArrowChoice (Queue f) where
 
 nilQ :: Queue (f :: k -> k -> *) a a
 nilQ = Queue NilTr NilTr NilTr
+{-# INLINE [2] nilQ #-}
 
 consQ :: forall (f :: k -> k -> *) a b c.
          f b c
       -> Queue f a b
       -> Queue f a c
 consQ bc (Queue f r s) = Queue (ConsTr bc f) r (ConsTr undefined s)
-{-# INLINE consQ #-}
+{-# INLINE [2] consQ #-}
 
 data ViewL f a b where
     EmptyL :: ViewL f a a
@@ -318,6 +319,30 @@ foldrQ :: forall (f :: k -> k -> *) c a b d.
        -> c a d
 foldrQ _nat ab NilQ          = ab
 foldrQ  nat ab (ConsQ xd bx) = nat xd (foldrQ nat ab bx)
+{-# INLINE [2] foldrQ #-}
+
+{-# RULES
+
+"foldrQ/consQ/nilQ"
+  foldrQ consQ nilQ = id
+
+"foldrQ/single"
+  forall (nat :: forall (x :: k) (y :: k) (z :: k). f y z -> c x y -> c x z)
+         (t :: f (v :: k) (w :: k))
+         (nil :: c (u :: k) (v :: k)).
+  foldrQ nat nil (consQ t nilQ) = nat t nil
+
+"foldrQ/nilQ"
+  forall (nat :: forall (x :: k) (y :: k) (z :: k). f y z -> c x y -> c x z)
+         (nil :: c (u :: k) (v :: k)).
+  foldrQ nat nil nilQ = nil
+
+"foldrQ/consQ"
+  forall (f :: Queue f (x :: k) (y :: k))
+         (g :: Queue f (y :: k) (z :: k)).
+  foldrQ consQ f g = g . f
+
+#-}
 
 -- | Efficient fold of a queue into a category, analogous to 'foldM'.
 --
@@ -329,7 +354,19 @@ foldNatQ :: forall (f :: k -> k -> *) c a b.
          -> Queue f a b
          -> c a b
 foldNatQ nat = foldrQ (\f c -> nat f . c) id
-{-# INLINE foldNatQ #-}
+{-# INLINE [2] foldNatQ #-}
+
+{-# RULES
+
+"foldNatQ/consQ" forall (f :: f (v :: k) (w :: k))
+                        (q :: Queue f (u :: k) (v :: k))
+                        (nat :: forall (x :: k) (y :: k). f x y -> c x y).
+                 foldNatQ nat (consQ f q) = nat f . foldNatQ nat q
+
+"foldNatQ/nilQ"  forall (nat :: forall (x :: k) (y :: k). f x y -> c x y).
+                 foldNatQ nat nilQ = id
+
+#-}
 
 -- | 'foldl' of a 'Queue'
 --
@@ -370,6 +407,23 @@ hoistQ :: forall (f :: k -> k -> *)
 hoistQ nat q = case q of
     NilQ        -> NilQ
     ConsQ tr q' -> ConsQ (nat tr) (hoistQ nat q')
+{-# INLINE [2] hoistQ #-}
+
+{-# RULES
+
+"hoistQ/foldNatQ"
+  forall (nat1 :: forall (x :: k) (y :: k). f x y -> g x y)
+         (nat  :: forall (x :: k) (y :: k). g x y -> h x y)
+         (q    :: Queue f x y).
+  foldNatQ nat (hoistQ nat1 q) = foldNatQ (nat . nat1) q
+
+"hoistQ/hoistQ"
+  forall (nat1 :: forall (x :: k) (y :: k). f x y -> g x y)
+         (nat  :: forall (x :: k) (y :: k). g x y -> h x y)
+         (q    :: Queue f x y).
+    hoistQ nat (hoistQ nat1 q) = hoistQ (nat . nat1) q
+
+#-}
 
 --
 -- Internal API
