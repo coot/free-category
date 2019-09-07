@@ -83,6 +83,29 @@ main = defaultMain
               (fromListM (arrCat . Add) ints)
         ]
 
+      , bgroup "Queue"
+        [ bench "right right" $
+            whnf
+              (\c -> foldNatFree2 interpret c 0)
+              (fromListR (\i -> ConsQ (Add i) NilQ) ints)
+        , bench "right left" $
+            whnf
+              (\c -> foldNatFree2 interpret c 0)
+              (fromListRL (\i -> ConsQ (Add i) NilQ) ints)
+        , bench "left left " $
+            whnf
+              (\c -> foldNatFree2 interpret c 0)
+              (fromListL (\i -> ConsQ (Add i) NilQ) ints)
+        , bench "left right" $
+            whnf
+              (\c -> foldNatFree2 interpret c 0)
+              (fromListLR (\i -> ConsQ (Add i) NilQ) ints)
+        , bench "alternate " $
+            whnf
+              (\c -> foldNatFree2 interpret c 0)
+              (fromListM (\i -> ConsQ (Add i) NilQ) ints)
+        ]
+
       , bgroup "ListTr"
         [ bench "right right" $
             whnf
