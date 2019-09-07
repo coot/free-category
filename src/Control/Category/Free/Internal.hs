@@ -179,8 +179,8 @@ instance ArrowChoice f => ArrowChoice (ListTr f) where
 --
 -- Upper bounds of `consQ`, `snocQ`, `unconsQ` are @O\(1\)@ (worst case).
 --
--- Invariant: sum of lengths of two last least is equal the length of the first
--- one.
+-- Internal invariant: sum of lengths of two last least is equal the length of
+-- the first one.
 --
 data Queue (f :: k -> k -> *) (a :: k) (b :: k) where
     Queue :: forall f a c b x.

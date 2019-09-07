@@ -26,19 +26,19 @@
 #endif
 
 module Control.Category.Free
-    ( -- * Optimised version of free category
-      Cat (Id)
-    , arrCat
-    , foldCat
-
-      -- * Real time Queue
-    , Queue (ConsQ, NilQ)
+    ( -- * Real time Queue
+      Queue (ConsQ, NilQ)
     , consQ
     , snocQ
     , unconsQ
     , foldNatQ
     , foldrQ
     , foldlQ
+
+      -- * Free Category based on Queue
+    , Cat (Id)
+    , arrCat
+    , foldCat
 
       -- * Free category (CPS style)
     , C (..)
@@ -83,12 +83,9 @@ import           Control.Category.Free.Internal
 import           Unsafe.Coerce (unsafeCoerce)
 
 
---
--- Free categories based on real time queues; Ideas after E.Kmett's guanxi
--- project.
---
-
--- | Optimised version of a free category.
+-- | A version of a free category based on realtime queues.  This is an
+-- optimised version (for right associations) of E.Kemett's free category from
+-- 'guanxi' project.
 --
 -- @('.')@ has @O\(1\)@ complexity, folding is @O\(n\)@ where @n@ is the number
 -- of transitions.
@@ -120,6 +117,11 @@ import           Unsafe.Coerce (unsafeCoerce)
 --
 -- Type aligned 'Queue's have efficient 'snocQ' and 'unconsQ' operations which
 -- allow to implement efficient composition and folding for 'Cat'.
+--
+-- /Performence/: it does not perform as reliably as 'Queue', which are not
+-- frigile to left right associations, and it is also more frigile to @-O@
+-- flags (behaves purly without any optimisations, e.g. @-O0@; and in some
+-- cases performence degrades with @-O2@ flag).
 --
 data Cat (f :: k -> k -> *) a b where
     Id  :: Cat f a a
