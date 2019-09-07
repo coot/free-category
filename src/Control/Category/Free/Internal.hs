@@ -32,7 +32,7 @@ module Control.Category.Free.Internal
   , ListTr (..)
   , lengthListTr
   , Queue (NilQ, ConsQ)
-  , emptyQ
+  , nilQ
   , consQ
   , ViewL (..)
   , unconsQ
@@ -267,8 +267,8 @@ instance ArrowChoice f => ArrowChoice (Queue f) where
   NilQ +++ (ConsQ fxb cax) = (arr id +++ fxb) `ConsQ` (NilQ +++ cax)
   NilQ +++ NilQ            = NilQ
 
-emptyQ :: Queue (f :: k -> k -> *) a a
-emptyQ = Queue NilTr NilTr NilTr
+nilQ :: Queue (f :: k -> k -> *) a a
+nilQ = Queue NilTr NilTr NilTr
 
 consQ :: forall (f :: k -> k -> *) a b c.
          f b c
@@ -303,7 +303,7 @@ pattern ConsQ a as <- (unconsQ -> a :< as) where
 
 pattern NilQ :: () => a ~ b => Queue f a b
 pattern NilQ <- (unconsQ -> EmptyL) where
-    NilQ = emptyQ
+    NilQ = nilQ
 
 #if __GLASGOW_HASKELL__ > 802
 {-# complete NilQ, ConsQ #-}

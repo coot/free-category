@@ -153,7 +153,7 @@ instance Show (Cat f a b) where
 arrCat :: forall (f :: k -> k -> *) a b.
           f a b
        -> Cat f a b
-arrCat ab = Cat emptyQ ab
+arrCat ab = Cat nilQ ab
 {-# INLINE arrCat #-}
 
 foldCat :: forall f c a b.
@@ -180,7 +180,7 @@ foldCat nat (Cat q0 tr0) =
 -- @
 -- op :: Cat f x y -> Cat (Op f) y x
 -- op Id = Id
--- op (Cat q tr) = Cat emptyQ (Op tr) . foldNatQ unDual q
+-- op (Cat q tr) = Cat nilQ (Op tr) . foldNatQ unDual q
 -- @
 --
 -- where
@@ -202,7 +202,7 @@ foldCat nat (Cat q0 tr0) =
 -- > op Id = Id
 -- >       ~ Id
 -- > op (Cat q tr)
--- >   = c₀@(Cat emptyQ (Op tr)) . foldNatQ unDual q
+-- >   = c₀@(Cat nilQ (Op tr)) . foldNatQ unDual q
 -- >        Note that `.` here denotes composition in `Cat (Op f)`.
 -- >        Let us assume that `q = c₁ : c₂ :  ⋯  : cₙ : NilQ`,
 -- >        where each `cᵢ :: Cat (Op (Op tr)) aᵢ aᵢ₊₁`
@@ -211,7 +211,7 @@ foldCat nat (Cat q0 tr0) =
 -- >        `unDual cᵢ :: Cat tr aᵢ aᵢ₊₁` has the same representation as cᵢ,
 -- >        at this step we also need to rewrite `.` composition in
 -- >        `Cat (Op f)` using composition in `Cat f`, this reverses the order
--- >   ~ cₙ . ⋯ . c₁ . Cat emptyQ tr
+-- >   ~ cₙ . ⋯ . c₁ . Cat nilQ tr
 -- >        By definition of composition in `Cat f`
 -- >   = Cat q tr
 --
@@ -232,7 +232,7 @@ unOp :: forall (f :: k -> k -> *) x y.
      -> Cat f y x
 unOp = unsafeCoerce
 -- unOp Id = Id
--- unOp (Cat q (Op tr)) = Cat emptyQ tr . foldNatQ unDual q
+-- unOp (Cat q (Op tr)) = Cat nilQ tr . foldNatQ unDual q
 {-# INLINE unOp #-}
 
 instance Arrow f => Arrow (Cat f) where
