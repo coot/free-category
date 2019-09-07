@@ -63,7 +63,7 @@ arrArr bc = Arr bc Id
 mapArr :: f b c
        -> Arr f a b
        -> Arr f a c
-mapArr bc ac = Cons bc emptyQ . ac
+mapArr bc ac = Cons bc nilQ . ac
 
 foldArr :: forall f arr a b.
            Arrow arr
@@ -103,7 +103,7 @@ type instance AlgebraType0 Arr f = ()
 type instance AlgebraType  Arr c = Arrow c
 
 instance FreeAlgebra2 Arr where
-  liftFree2 = \fab -> Cons fab emptyQ
+  liftFree2 = \fab -> Cons fab nilQ
   {-# INLINE liftFree2 #-}
 
   foldNatFree2 = foldArr
