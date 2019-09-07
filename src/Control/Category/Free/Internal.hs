@@ -89,6 +89,12 @@ instance Category f => Monoid (Op f o o) where
     mappend = (<>)
 #endif
 
+
+--
+-- Type aligned list 'ListTr'
+--
+
+
 -- | Simple representation of a free category by using type aligned
 -- lists.  This is not a surprise as free monoids can be represented by
 -- lists (up to laziness)
@@ -171,6 +177,11 @@ instance ArrowChoice f => ArrowChoice (ListTr f) where
   (ConsTr fxb cax) +++ NilTr = (fxb +++ arr id) `ConsTr` (cax +++ NilTr)
   NilTr +++ (ConsTr fxb cax) = (arr id +++ fxb) `ConsTr` (NilTr +++ cax)
   NilTr +++ NilTr            = NilTr
+
+
+--
+-- Type aligned real time 'Queue'
+--
 
 
 -- | Type alligned real time queues; Based on `Purely Functinal Data Structures`
