@@ -31,13 +31,19 @@ module Control.Category.Free
     , arrCat
     , foldCat
 
+      -- * Real time Queue
+    , Queue (ConsQ, NilQ)
+    , consQ
+    , snocQ
+    , unconsQ
+    , foldNatQ
+    , foldrQ
+    , foldlQ
+
       -- * Free category (CPS style)
     , C (..)
     , toC
     , fromC
-
-      -- * Naive version of a free category
-    , ListTr (..)
 
       -- * Opposite category
     , Op (..)
