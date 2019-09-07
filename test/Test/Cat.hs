@@ -29,6 +29,7 @@ import           Numeric.Natural (Natural)
 import           Control.Algebra.Free2
 
 import           Control.Category.Free
+import           Control.Category.Free.Internal
 
 import           Test.QuickCheck
 import           Test.Tasty (TestTree, testGroup)
@@ -37,19 +38,22 @@ import           Test.Tasty.QuickCheck (testProperty)
 tests :: TestTree
 tests =
   testGroup "Control.Category.Free"
-  [ testProperty "Cat"  prop_Cat
-  , testProperty "C"    prop_C
+  [ testProperty "Cat"   prop_Cat
+  , testProperty "C"     prop_C
   , testGroup "Category laws"
     [ testProperty "Cat id"               prop_id_Cat
     , testProperty "Cat associativity"    prop_associativity_Cat
     , testProperty "C id"                 prop_id_C
     , testProperty "C associativity"      prop_associativity_C
+    , testProperty "ListTr id"            prop_id_Queue
+    , testProperty "ListTr associativity" prop_associativity_Queue
     , testProperty "ListTr id"            prop_id_ListTr
     , testProperty "ListTr associativity" prop_associativity_ListTr
     ]
   , testGroup "foldFree2 and foldMap"
     [ testProperty "foldFree Cat"    prop_foldCat
     , testProperty "foldFree C"      prop_foldC
+    , testProperty "foldFree Queue"  prop_foldQueue
     , testProperty "foldFree ListTr" prop_foldListTr
     ]
   ]
@@ -182,7 +186,7 @@ instance (forall x y. Show (Tr x y)) => Show ArbListTr where
       ++ " -> "
       ++ show b
       ++ " "
-      ++ show listTr 
+      ++ show listTr
 #else
 instance Show ArbListTr where
     show (ArbListTr _listTr a b) =
@@ -329,7 +333,7 @@ instance Arbitrary ArbIntCat where
 prop_id_Cat :: ArbIntCat -> Bool
 prop_id_Cat (ArbIntCat f) =
     prop_id (on (==) toList) f
-  
+
 prop_associativity_Cat
     :: ArbIntCat -> ArbIntCat -> ArbIntCat
     -> Bool
@@ -357,13 +361,41 @@ instance Arbitrary ArbIntC where
 prop_id_C :: ArbIntC -> Bool
 prop_id_C (ArbIntC f) =
     prop_id (on (==) toList) f
-  
+
 prop_associativity_C
     :: ArbIntC -> ArbIntC -> ArbIntC
     -> Bool
 prop_associativity_C (ArbIntC f0)
                      (ArbIntC f1)
                      (ArbIntC f2) =
+      prop_associativity (on (==) toList) f0 f1 f2
+
+--
+-- 'Queue' category laws
+--
+
+newtype ArbIntQueue = ArbIntQueue (Queue IntCat '() '())
+
+instance Show ArbIntQueue where
+    show (ArbIntQueue f) = show (toList f)
+
+instance Arbitrary ArbIntQueue where
+    arbitrary = ArbIntQueue . fromList <$> arbitrary
+    shrink (ArbIntQueue c) =
+      map (ArbIntQueue . fromList)
+          $ shrinkList (const [])
+          $ toList c
+
+prop_id_Queue :: ArbIntQueue -> Bool
+prop_id_Queue (ArbIntQueue f) =
+    prop_id (on (==) toList) f
+
+prop_associativity_Queue
+    :: ArbIntQueue -> ArbIntQueue -> ArbIntQueue
+    -> Bool
+prop_associativity_Queue (ArbIntQueue f0)
+                         (ArbIntQueue f1)
+                         (ArbIntQueue f2) =
       prop_associativity (on (==) toList) f0 f1 f2
 
 --
@@ -385,7 +417,7 @@ instance Arbitrary ArbIntListTr where
 prop_id_ListTr :: ArbIntListTr -> Bool
 prop_id_ListTr (ArbIntListTr f) =
     prop_id (on (==) toList) f
-  
+
 prop_associativity_ListTr
     :: ArbIntListTr -> ArbIntListTr -> ArbIntListTr
     -> Bool
@@ -405,6 +437,10 @@ prop_foldCat (ArbIntCat f)
 
 prop_foldC :: (Blind ArbIntC) -> Bool
 prop_foldC (Blind (ArbIntC f))
+    = foldFree2 f == foldMap id (toList f)
+
+prop_foldQueue :: ArbIntQueue -> Bool
+prop_foldQueue (ArbIntQueue f)
     = foldFree2 f == foldMap id (toList f)
 
 prop_foldListTr :: ArbIntListTr -> Bool
