@@ -30,6 +30,7 @@ let
     in 
        nixpkgs.lib.hasPrefix "src" relPath
     || nixpkgs.lib.hasPrefix "test" relPath
+    || nixpkgs.lib.hasPrefix "bench" relPath
     || nixpkgs.lib.any
         (a: a == relPath)
         [ "Setup.hs" "cabal.project" "ChangeLog.md" "free-category.cabal" "LICENSE"];

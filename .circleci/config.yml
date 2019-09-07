@@ -40,7 +40,7 @@ jobs:
       - run:
           name: "GHC 865"
           command: |
-            nix-build -A free-category -o result-fc --argstr compiler ghc865
+            nix-build -A free-category -o result-fc --arg benchmarks true --argstr compiler ghc865
             nix-build -A examples -o result-ex --argstr compiler ghc865
       - cachix-push:
           o: result-fc
@@ -53,7 +53,7 @@ jobs:
       - run:
           name: "GHC 844"
           command: |
-            nix-build -A free-category -o result-fc --argstr compiler ghc844
+            nix-build -A free-category -o result-fc --arg benchmarks true --argstr compiler ghc844
             nix-build -A examples -o result-ex --argstr compiler ghc844
       - cachix-push:
           o: result-fc
@@ -66,7 +66,7 @@ jobs:
       - run:
           name: "GHC 822"
           command: |
-            nix-build -A free-category -o result-fc --argstr compiler ghc822
+            nix-build -A free-category -o result-fc --arg benchmarks true --argstr compiler ghc822
             nix-build -A examples -o result-ex --argstr compiler ghc822
       - cachix-push:
           o: result-fc
@@ -80,7 +80,7 @@ jobs:
       - run:
           name: "GHC 802"
           command: |
-            nix-build -A free-category -o result-fc --argstr compiler ghc802
+            nix-build -A free-category -o result-fc --arg benchmarks true --argstr compiler ghc802
             nix-build -A examples -o result-ex --argstr compiler ghc802
       - cachix-push:
           o: result-fc
