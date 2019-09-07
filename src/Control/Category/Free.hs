@@ -48,6 +48,7 @@ module Control.Category.Free
       -- * Opposite category
     , Op (..)
     , hoistOp
+
       -- * Free interface re-exports
     , FreeAlgebra2 (..)
     , wrapFree2
@@ -62,17 +63,17 @@ module Control.Category.Free
 import           Prelude hiding (id, concat, (.))
 import           Control.Category (Category (..))
 import           Control.Algebra.Free2
-  ( AlgebraType0
-  , AlgebraType
-  , FreeAlgebra2 (..)
-  , proof
-  , wrapFree2
-  , foldFree2
-  , hoistFree2
-  , hoistFreeH2
-  , joinFree2
-  , bindFree2
-  )
+                  ( AlgebraType0
+                  , AlgebraType
+                  , FreeAlgebra2 (..)
+                  , proof
+                  , wrapFree2
+                  , foldFree2
+                  , hoistFree2
+                  , hoistFreeH2
+                  , joinFree2
+                  , bindFree2
+                  )
 import           Control.Arrow (Arrow (..), ArrowZero (..), ArrowChoice (..))
 #if __GLASGOW_HASKELL__ < 804
 import           Data.Monoid (Monoid (..))
