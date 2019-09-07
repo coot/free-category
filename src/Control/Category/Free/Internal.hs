@@ -15,7 +15,7 @@
 {-# OPTIONS_HADDOCK show-extensions #-}
 
 #if __GLASGOW_HASKELL__ <= 802
--- ghc802 does not infer that 'cons' is used when using a bidirectional
+-- ghc802 does not infer that 'consQ' is used when using a bidirectional
 -- pattern
 {-# OPTIONS_GHC -Wno-unused-top-binds    #-}
 -- the 'complete' pragma was introduced in ghc804
@@ -33,10 +33,10 @@ module Control.Category.Free.Internal
   , lengthListTr
   , Queue (NilQ, ConsQ)
   , emptyQ
-  , cons
+  , consQ
   , ViewL (..)
-  , uncons
-  , snoc
+  , unconsQ
+  , snocQ
   , foldNatQ
   , foldrQ
   , foldlQ
@@ -176,7 +176,7 @@ instance FreeAlgebra2 ListTr where
 -- | Type alligned real time queues; Based on `Purely Functinal Data Structures`
 -- C.Okasaki.
 --
--- Upper bounds of `cons`, `snoc`, `uncons` are @O\(1\)@ (worst case).
+-- Upper bounds of `consQ`, `snocQ`, `unconsQ` are @O\(1\)@ (worst case).
 --
 -- Invariant: sum of lengths of two last least is equal the length of the first
 -- one.
@@ -212,12 +212,12 @@ instance Show (Queue f r s) where
 emptyQ :: Queue (f :: k -> k -> *) a a
 emptyQ = Queue NilTr NilTr NilTr
 
-cons :: forall (f :: k -> k -> *) a b c.
-        f b c
-     -> Queue f a b
-     -> Queue f a c
-cons bc (Queue f r s) = Queue (ConsTr bc f) r (ConsTr undefined s)
-{-# INLINE cons #-}
+consQ :: forall (f :: k -> k -> *) a b c.
+         f b c
+      -> Queue f a b
+      -> Queue f a c
+consQ bc (Queue f r s) = Queue (ConsTr bc f) r (ConsTr undefined s)
+{-# INLINE consQ #-}
 
 data ViewL f a b where
     EmptyL :: ViewL f a a
@@ -225,26 +225,26 @@ data ViewL f a b where
 
 -- | 'uncons' a 'Queue', complexity: @O\(1\)@
 --
-uncons :: Queue f a b
-       -> ViewL f a b
-uncons (Queue NilTr NilTr _)     = EmptyL
-uncons (Queue (ConsTr tr f) r s) = tr :< exec f r s
-uncons _                         = error "Queue.uncons: invariant violation"
-{-# INLINE uncons #-}
+unconsQ :: Queue f a b
+        -> ViewL f a b
+unconsQ (Queue NilTr NilTr _)     = EmptyL
+unconsQ (Queue (ConsTr tr f) r s) = tr :< exec f r s
+unconsQ _                         = error "Queue.uncons: invariant violation"
+{-# INLINE unconsQ #-}
 
-snoc :: forall (f :: k -> k -> *) a b c.
-        Queue f b c
-     -> f a b
-     -> Queue f a c
-snoc (Queue f r s) g = exec f (ConsTr (Op g) r) s
-{-# INLINE snoc #-}
+snocQ :: forall (f :: k -> k -> *) a b c.
+         Queue f b c
+      -> f a b
+      -> Queue f a c
+snocQ (Queue f r s) g = exec f (ConsTr (Op g) r) s
+{-# INLINE snocQ #-}
 
 pattern ConsQ :: f b c -> Queue f a b -> Queue f a c
-pattern ConsQ a as <- (uncons -> a :< as) where
-    ConsQ = cons
+pattern ConsQ a as <- (unconsQ -> a :< as) where
+    ConsQ = consQ
 
 pattern NilQ :: () => a ~ b => Queue f a b
-pattern NilQ <- (uncons -> EmptyL) where
+pattern NilQ <- (unconsQ -> EmptyL) where
     NilQ = emptyQ
 
 #if __GLASGOW_HASKELL__ > 802
