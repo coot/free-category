@@ -44,6 +44,7 @@ module Control.Category.Free
       -- * Free category (CPS style)
     , C (..)
     , arrC
+    , consC
     , foldNatC
     , toC
     , fromC
@@ -409,6 +410,13 @@ arrC :: forall (f :: k -> k -> *) a b.
 arrC = \f -> C $ \k -> k f
 {-# INLINE [1] arrC #-}
 
+consC :: forall (f :: k -> k -> *) a b c.
+         f b c
+      -> C f a b
+      -> C f a c
+consC bc ab = arrC bc `composeC` ab
+{-# INLINE [1] consC #-}
+
 foldNatC :: forall (f :: k -> k -> *) c a b.
             Category c
          => (forall x y. f x y -> c x y)
@@ -430,6 +438,12 @@ instance FreeAlgebra2 C where
   forget2 = proof
 
 {-# RULES
+
+"foldNatC/consC"
+  forall (f :: f (v :: k) (w :: k))
+         (q :: C f (u :: k) (v :: k))
+         (nat :: forall (x :: k) (y :: k). f x y -> c x y).
+  foldNatC nat (consC f q) = nat f . foldNatC nat q
 
 "foldNatC/arrC"
   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
@@ -454,7 +468,7 @@ instance ArrowChoice f => ArrowChoice (C f) where
   {-# INLINE (+++) #-}
 
 instance Semigroup (C f o o) where
-  f <> g = f . g
+  f <> g = f `composeC` g
 
 instance Monoid (C f o o) where
   mempty = id
