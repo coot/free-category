@@ -221,26 +221,30 @@ instance Show (Queue f r s) where
       ++ show (lengthListTr s)
 #endif
 
+composeQ :: forall (f :: k -> k -> *) x y z.
+            Queue f y z
+         -> Queue f x y
+         -> Queue f x z
+composeQ (ConsQ f q1) q2 = ConsQ f (q1 . q2)
+composeQ NilQ         q2 = q2
+{-# INLINE [1] composeQ #-}
+
 instance Category (Queue f) where
-    id = NilQ
-    ConsQ f q1 . q2 = ConsQ f (q1 . q2)
-    NilQ       . q2 = q2
+    id  = NilQ
+    (.) = composeQ
 
 type instance AlgebraType0 Queue f = ()
 type instance AlgebraType  Queue c = Category c
 
 instance FreeAlgebra2 Queue where
-  liftFree2 = \fab -> ConsQ fab NilQ
-  {-# INLINE liftFree2 #-}
-
+  liftFree2    = arrQ
   foldNatFree2 = foldNatQ
-  {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
   forget2 = proof
 
 instance Semigroup (Queue f o o) where
-  f <> g = g . f
+  f <> g = g `composeQ` f
 
 instance Monoid (Queue f o o) where
   mempty = NilQ
@@ -269,14 +273,14 @@ instance ArrowChoice f => ArrowChoice (Queue f) where
 
 nilQ :: Queue (f :: k -> k -> *) a a
 nilQ = Queue NilTr NilTr NilTr
-{-# INLINE [2] nilQ #-}
+{-# INLINE [1] nilQ #-}
 
 consQ :: forall (f :: k -> k -> *) a b c.
          f b c
       -> Queue f a b
       -> Queue f a c
 consQ bc (Queue f r s) = Queue (ConsTr bc f) r (ConsTr undefined s)
-{-# INLINE [2] consQ #-}
+{-# INLINE [1] consQ #-}
 
 data ViewL f a b where
     EmptyL :: ViewL f a a
@@ -319,7 +323,7 @@ foldrQ :: forall (f :: k -> k -> *) c a b d.
        -> c a d
 foldrQ _nat ab NilQ          = ab
 foldrQ  nat ab (ConsQ xd bx) = nat xd (foldrQ nat ab bx)
-{-# INLINE [2] foldrQ #-}
+{-# INLINE [1] foldrQ #-}
 
 {-# RULES
 
@@ -344,6 +348,11 @@ foldrQ  nat ab (ConsQ xd bx) = nat xd (foldrQ nat ab bx)
 
 #-}
 
+arrQ :: forall (f :: k -> k -> *) a b.
+        f a b -> Queue f a b
+arrQ = \fab -> ConsQ fab NilQ
+{-# INLINE [1] arrQ #-}
+
 -- | Efficient fold of a queue into a category, analogous to 'foldM'.
 --
 -- /complexity/ @O\(n\)@
@@ -354,7 +363,7 @@ foldNatQ :: forall (f :: k -> k -> *) c a b.
          -> Queue f a b
          -> c a b
 foldNatQ nat = foldrQ (\f c -> nat f . c) id
-{-# INLINE [2] foldNatQ #-}
+{-# INLINE [1] foldNatQ #-}
 
 {-# RULES
 
@@ -365,6 +374,13 @@ foldNatQ nat = foldrQ (\f c -> nat f . c) id
 
 "foldNatQ/nilQ"  forall (nat :: forall (x :: k) (y :: k). f x y -> c x y).
                  foldNatQ nat nilQ = id
+
+
+"foldNatC/arrQ"
+  forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
+         (g :: f v w)
+         (h :: Queue f u v).
+  foldNatQ nat (arrQ g `composeQ` h) = nat g . foldNatQ nat h
 
 #-}
 
@@ -407,7 +423,7 @@ hoistQ :: forall (f :: k -> k -> *)
 hoistQ nat q = case q of
     NilQ        -> NilQ
     ConsQ tr q' -> ConsQ (nat tr) (hoistQ nat q')
-{-# INLINE [2] hoistQ #-}
+{-# INLINE [1] hoistQ #-}
 
 {-# RULES
 
