@@ -345,10 +345,13 @@ type instance AlgebraType  Cat c = Category c
 --
 instance FreeAlgebra2 Cat where
   liftFree2    = liftCat
+  {-# INLINE liftFree2 #-}
   foldNatFree2 = foldNatCat
+  {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
   forget2 = proof
+
 
 --
 -- CPS style free categories
@@ -446,6 +449,7 @@ instance FreeAlgebra2 C where
   liftFree2    = liftC
   {-# INLINE liftFree2 #-}
   foldNatFree2 = foldNatC
+  {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
   forget2 = proof
