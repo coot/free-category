@@ -189,10 +189,7 @@ foldNatCat nat (Cat q0 tr0) =
          (h :: Cat f u v).
   foldNatCat nat (liftCat g `compose` h) = nat g . foldNatCat nat h
 
---"foldNatCat/id"     forall (g :: f v w) (h :: Cat f u v).
---                 foldNatCat Prelude.id (liftCat g `compose` h) = g . foldNatCat id h
-
--- TODO: These two rules may never fire do to `Class op` rule.
+-- TODO: These two rules may never fire due to `Class op` rule.
 --
 -- "foldNatCat/foldMap"
 --   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
