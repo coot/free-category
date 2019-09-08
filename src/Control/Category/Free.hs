@@ -144,9 +144,8 @@ compose f Id = f
 {-# INLINE [1] compose #-}
 
 instance Category (Cat f) where
-    id = Id
+    id  = Id
     (.) = compose
-    {-# INLINE (.) #-}
 
 instance Semigroup (Cat f a a) where
     f <> g = f `compose` g
@@ -280,7 +279,7 @@ op :: forall (f :: k -> k -> *) x y.
       Cat f x y
    -> Cat (Op f) y x
 op = unsafeCoerce
-{-# INLINE [2] op #-}
+{-# INLINE [1] op #-}
 
 -- | Since `op` is an identity, it inverse `unOp` must be too.  Thus we can
 -- also use `unsafeCoerce`.
@@ -291,7 +290,7 @@ unOp :: forall (f :: k -> k -> *) x y.
 unOp = unsafeCoerce
 -- unOp Id = Id
 -- unOp (Cat q (Op tr)) = Cat nilQ tr . foldNatQ unDual q
-{-# INLINE [2] unOp #-}
+{-# INLINE [1] unOp #-}
 
 {-# RULES
 
@@ -377,7 +376,6 @@ composeC (C g) (C f) = C $ \k -> g k . f k
 instance Category (C f) where
   id  = C (const id)
   (.) = composeC
-  {-# INLINE (.) #-}
 
 #if __GLASGOW_HASKELL__ >= 806
 -- | Show instance via 'ListTr'
