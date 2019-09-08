@@ -43,6 +43,8 @@ module Control.Category.Free
 
       -- * Free category (CPS style)
     , C (..)
+    , arrC
+    , foldNatC
     , toC
     , fromC
 
@@ -358,9 +360,13 @@ newtype C f a b
              -> r a b
       }
 
+composeC :: C f y z -> C f x y -> C f x z
+composeC (C g) (C f) = C $ \k -> g k . f k
+{-# INLINE [1] composeC #-}
+
 instance Category (C f) where
-  id = C (const id)
-  C bc . C ab = C $ \k -> bc k . ab k
+  id  = C (const id)
+  (.) = composeC
   {-# INLINE (.) #-}
 
 #if __GLASGOW_HASKELL__ >= 806
@@ -388,18 +394,41 @@ fromC :: C f a b -> ListTr f a b
 fromC = hoistFreeH2
 {-# INLINE fromC #-}
 
+arrC :: forall (f :: k -> k -> *) a b.
+        f a b
+     -> C f a b
+arrC = \f -> C $ \k -> k f
+{-# INLINE [1] arrC #-}
+
+foldNatC :: forall (f :: k -> k -> *) c a b.
+            Category c
+         => (forall x y. f x y -> c x y)
+         -> C f a b
+         -> c a b
+foldNatC nat (C f) = f nat
+{-# INLINE [1] foldNatC #-}
+
 type instance AlgebraType0 C f = ()
 type instance AlgebraType  C c = Category c
 
 instance FreeAlgebra2 C where
-  liftFree2 = \fab -> C $ \k -> k fab
+  liftFree2    = arrC
   {-# INLINE liftFree2 #-}
-
-  foldNatFree2 fun (C f) = f fun
+  foldNatFree2 = foldNatC
   {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
   forget2 = proof
+
+{-# RULES
+
+"foldNatC/arrC"
+  forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
+         (g :: f v w)
+         (h :: C f u v).
+    foldNatC nat (arrC g `composeC` h) = nat g . foldNatC nat h
+
+#-}
 
 instance Arrow f => Arrow (C f) where
   arr ab = C $ \k -> k (arr ab)
