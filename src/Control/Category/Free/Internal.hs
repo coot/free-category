@@ -135,14 +135,12 @@ instance Category (ListTr f) where
   id = NilTr
   (ConsTr x xs) . ys = ConsTr x (xs . ys)
   NilTr         . ys = ys
-  {-# INLINE (.) #-}
 
 type instance AlgebraType0 ListTr f = ()
 type instance AlgebraType  ListTr c = Category c
 
 instance FreeAlgebra2 ListTr where
   liftFree2 = \fab -> ConsTr fab NilTr
-  {-# INLINE liftFree2 #-}
 
   foldNatFree2 _   NilTr     = id
   foldNatFree2 fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
