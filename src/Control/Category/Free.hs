@@ -39,7 +39,7 @@ module Control.Category.Free
     , Cat (Id)
     , arrCat
     , consCat
-    , foldCat
+    , foldNatCat
 
       -- * Free category (CPS style)
     , C (..)
@@ -170,48 +170,54 @@ consCat :: forall (f :: k -> k -> *) a b c.
 consCat bc ab = arrCat bc . ab
 {-# INLINE [1] consCat #-}
 
-foldCat :: forall (f :: k -> k -> *)c a b.
-           Category c
-        => (forall x y. f x y -> c x y)
-        -> Cat f a b
-        -> c a b
-foldCat _nat Id = id
-foldCat nat (Cat q0 tr0) =
+foldNatCat :: forall (f :: k -> k -> *)c a b.
+              Category c
+           => (forall x y. f x y -> c x y)
+           -> Cat f a b
+           -> c a b
+foldNatCat _nat Id = id
+foldNatCat nat (Cat q0 tr0) =
     case q0 of
       NilQ        -> nat tr0
       ConsQ Id q' -> go q' . nat tr0
-      ConsQ c  q' -> go q' . foldCat nat (unOp c) . nat tr0
+      ConsQ c  q' -> go q' . foldNatCat nat (unOp c) . nat tr0
   where
     -- like foldNatQ
     go :: Queue (Cat (Op f)) x y -> c y x
     go q = case q of
       NilQ        -> id
-      ConsQ zy q' -> go q' . foldCat nat (unOp zy)
-{-# INLINE [1] foldCat #-}
+      ConsQ zy q' -> go q' . foldNatCat nat (unOp zy)
+{-# INLINE [1] foldNatCat #-}
 
 {-# RULES
 
-"foldCat/arrCat"
+"foldNatCat/consCat"
+  forall (f :: f (v :: k) (w :: k))
+         (q :: Cat f (u :: k) (v :: k))
+         (nat :: forall (x :: k) (y :: k). f x y -> c x y).
+  foldNatCat nat (consCat f q) = nat f . foldNatCat nat q
+
+"foldNatCat/arrCat"
   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
          (g :: f v w)
          (h :: Cat f u v).
-  foldCat nat (arrCat g `compose` h) = nat g . foldCat nat h
+  foldNatCat nat (arrCat g `compose` h) = nat g . foldNatCat nat h
 
---"foldCat/id"     forall (g :: f v w) (h :: Cat f u v).
---                 foldCat Prelude.id (arrCat g `compose` h) = g . foldCat id h
+--"foldNatCat/id"     forall (g :: f v w) (h :: Cat f u v).
+--                 foldNatCat Prelude.id (arrCat g `compose` h) = g . foldNatCat id h
 
 -- TODO: These two rules may never fire do to `Class op` rule.
 --
--- "foldCat/foldMap"
+-- "foldNatCat/foldMap"
 --   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
 --          (fs :: Monoid (c a a) => [f (a :: k) a]).
---   foldCat nat (foldMap arrCat fs) = foldMap nat fs
+--   foldNatCat nat (foldMap arrCat fs) = foldMap nat fs
 
--- "foldCat/foldr"
+-- "foldNatCat/foldr"
 --   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
 --          (fs :: Monoid (c a a) => [f (a :: k) a])
 --          (nil :: Cat f a a).
---   foldCat nat (foldr consCat nil fs) = foldMap nat fs . foldCat nat nil
+--   foldNatCat nat (foldr consCat nil fs) = foldMap nat fs . foldNatCat nat nil
 
 #-}
 
@@ -327,9 +333,8 @@ type instance AlgebraType  Cat c = Category c
 -- transitions embedded in 'Cat'.
 --
 instance FreeAlgebra2 Cat where
-  liftFree2 = arrCat
-
-  foldNatFree2 = foldCat
+  liftFree2    = arrCat
+  foldNatFree2 = foldNatCat
 
   codom2  = proof
   forget2 = proof
