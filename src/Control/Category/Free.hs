@@ -147,6 +147,15 @@ instance Category (Cat f) where
     (.) = compose
     {-# INLINE (.) #-}
 
+instance Semigroup (Cat f a a) where
+    f <> g = f `compose` g
+
+instance Monoid (Cat f o o) where
+  mempty = id
+#if __GLASGOW_HASKELL__ < 804
+  mappend = (<>)
+#endif
+
 #if __GLASGOW_HASKELL__ >= 806
 -- | Show instance via 'ListTr'
 --
