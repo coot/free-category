@@ -2,10 +2,10 @@
 [![Maintainer: coot](https://img.shields.io/badge/maintainer-coot-lightgrey.svg)](http://github.com/coot)
 [![CircleCI](https://circleci.com/gh/coot/free-category/tree/master.svg?style=svg)](https://circleci.com/gh/coot/free-category/tree/master)
 
-This package contains efficient free categories. There are two presentations:
+This package contains efficient free categories. There are a few presentations based on:
 
-* using realtime queues (C. Okasaki 'Pure Functional Data Structures')
-* using continuation passing style
+* realtime queues (C. Okasaki 'Pure Functional Data Structures')
+* continuation passing style
 
 Free arrows and free Kleisli categories are also included.
 
