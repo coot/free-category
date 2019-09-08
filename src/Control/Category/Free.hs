@@ -143,31 +143,6 @@ compose Id f = f
 compose f Id = f
 {-# INLINE [1] compose #-}
 
-instance Category (Cat f) where
-    id  = Id
-    (.) = compose
-
-instance Semigroup (Cat f a a) where
-    f <> g = f `compose` g
-
-instance Monoid (Cat f o o) where
-  mempty = id
-#if __GLASGOW_HASKELL__ < 804
-  mappend = (<>)
-#endif
-
-#if __GLASGOW_HASKELL__ >= 806
--- | Show instance via 'ListTr'
---
-instance (forall x y. Show (f x y)) => Show (Cat f a b) where
-    show c = show (hoistFreeH2 c :: ListTr f a b)
-#else
--- | Blind show instance via 'ListTr'
---
-instance Show (Cat f a b) where
-    show c = show (hoistFreeH2 c :: ListTr f a b)
-#endif
-
 arrCat :: forall (f :: k -> k -> *) a b.
           f a b
        -> Cat f a b
@@ -304,6 +279,31 @@ unOp = unsafeCoerce
 
 #-}
 
+instance Category (Cat f) where
+    id  = Id
+    (.) = compose
+
+instance Semigroup (Cat f a a) where
+    f <> g = f `compose` g
+
+instance Monoid (Cat f o o) where
+  mempty = id
+#if __GLASGOW_HASKELL__ < 804
+  mappend = (<>)
+#endif
+
+#if __GLASGOW_HASKELL__ >= 806
+-- | Show instance via 'ListTr'
+--
+instance (forall x y. Show (f x y)) => Show (Cat f a b) where
+    show c = show (hoistFreeH2 c :: ListTr f a b)
+#else
+-- | Blind show instance via 'ListTr'
+--
+instance Show (Cat f a b) where
+    show c = show (hoistFreeH2 c :: ListTr f a b)
+#endif
+
 instance Arrow f => Arrow (Cat f) where
     arr = arrCat . arr
     {-# INLINE arr #-}
@@ -373,22 +373,6 @@ composeC :: C f y z -> C f x y -> C f x z
 composeC (C g) (C f) = C $ \k -> g k . f k
 {-# INLINE [1] composeC #-}
 
-instance Category (C f) where
-  id  = C (const id)
-  (.) = composeC
-
-#if __GLASGOW_HASKELL__ >= 806
--- | Show instance via 'ListTr'
---
-instance (forall x y. Show (f x y)) => Show (C f a b) where
-    show c = show (hoistFreeH2 c :: ListTr f a b)
-#else
--- | Blind show instance via 'ListTr'
---
-instance Show (C f a b) where
-    show c = show (hoistFreeH2 c :: ListTr f a b)
-#endif
-
 -- |
 -- Isomorphism from @'Cat'@ to @'C'@, which is a specialisation of
 -- @'hoistFreeH2'@.
@@ -423,18 +407,6 @@ foldNatC :: forall (f :: k -> k -> *) c a b.
 foldNatC nat (C f) = f nat
 {-# INLINE [1] foldNatC #-}
 
-type instance AlgebraType0 C f = ()
-type instance AlgebraType  C c = Category c
-
-instance FreeAlgebra2 C where
-  liftFree2    = arrC
-  {-# INLINE liftFree2 #-}
-  foldNatFree2 = foldNatC
-  {-# INLINE foldNatFree2 #-}
-
-  codom2  = proof
-  forget2 = proof
-
 {-# RULES
 
 "foldNatC/consC"
@@ -450,6 +422,32 @@ instance FreeAlgebra2 C where
     foldNatC nat (arrC g `composeC` h) = nat g . foldNatC nat h
 
 #-}
+
+instance Category (C f) where
+  id  = C (const id)
+  (.) = composeC
+
+#if __GLASGOW_HASKELL__ >= 806
+-- | Show instance via 'ListTr'
+--
+instance (forall x y. Show (f x y)) => Show (C f a b) where
+    show c = show (hoistFreeH2 c :: ListTr f a b)
+#else
+-- | Blind show instance via 'ListTr'
+--
+instance Show (C f a b) where
+    show c = show (hoistFreeH2 c :: ListTr f a b)
+#endif
+
+type instance AlgebraType0 C f = ()
+type instance AlgebraType  C c = Category c
+
+instance FreeAlgebra2 C where
+  liftFree2    = arrC
+  foldNatFree2 = foldNatC
+
+  codom2  = proof
+  forget2 = proof
 
 instance Arrow f => Arrow (C f) where
   arr ab = C $ \k -> k (arr ab)

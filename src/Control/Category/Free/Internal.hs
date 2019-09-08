@@ -233,25 +233,16 @@ data Queue (f :: k -> k -> *) (a :: k) (b :: k) where
           ->   ListTr f      b x
           -> Queue f a c
 
-#if __GLASGOW_HASKELL__ >= 806
-instance (forall (x :: k) (y :: k). Show (f x y))
-      => Show (Queue f a b) where
-    show (Queue f r s) =
-        "Queue ("
-        ++ show f
-        ++ ") ("
-        ++ show r
-        ++ ") "
-        ++ show (lengthListTr s)
-#else
-instance Show (Queue f r s) where
-    show (Queue f r s) =
-        "Queue "
-      ++ show (lengthListTr f)
-      ++ " "
-      ++ show (lengthListTr r)
-      ++ " "
-      ++ show (lengthListTr s)
+pattern ConsQ :: f b c -> Queue f a b -> Queue f a c
+pattern ConsQ a as <- (unconsQ -> a :< as) where
+    ConsQ = consQ
+
+pattern NilQ :: () => a ~ b => Queue f a b
+pattern NilQ <- (unconsQ -> EmptyL) where
+    NilQ = nilQ
+
+#if __GLASGOW_HASKELL__ > 802
+{-# complete NilQ, ConsQ #-}
 #endif
 
 composeQ :: forall (f :: k -> k -> *) x y z.
@@ -261,48 +252,6 @@ composeQ :: forall (f :: k -> k -> *) x y z.
 composeQ (ConsQ f q1) q2 = ConsQ f (q1 . q2)
 composeQ NilQ         q2 = q2
 {-# INLINE [1] composeQ #-}
-
-instance Category (Queue f) where
-    id  = NilQ
-    (.) = composeQ
-
-type instance AlgebraType0 Queue f = ()
-type instance AlgebraType  Queue c = Category c
-
-instance FreeAlgebra2 Queue where
-  liftFree2    = arrQ
-  foldNatFree2 = foldNatQ
-
-  codom2  = proof
-  forget2 = proof
-
-instance Semigroup (Queue f o o) where
-  f <> g = g `composeQ` f
-
-instance Monoid (Queue f o o) where
-  mempty = NilQ
-#if __GLASGOW_HASKELL__ < 804
-  mappend = (<>)
-#endif
-
-instance Arrow f => Arrow (Queue f) where
-  arr ab = arr ab `ConsQ` NilQ
-
-  (ConsQ fxb cax) *** (ConsQ fyb cay)
-                           = (fxb *** fyb)    `ConsQ` (cax *** cay)
-  (ConsQ fxb cax) *** NilQ = (fxb *** arr id) `ConsQ` (cax *** NilQ)
-  NilQ *** (ConsQ fxb cax) = (arr id *** fxb) `ConsQ` (NilQ *** cax)
-  NilQ *** NilQ            = NilQ
-
-instance ArrowZero f => ArrowZero (Queue f) where
-  zeroArrow = zeroArrow `ConsQ` NilQ
-
-instance ArrowChoice f => ArrowChoice (Queue f) where
-  (ConsQ fxb cax) +++ (ConsQ fyb cay)
-                           = (fxb +++ fyb)    `ConsQ` (cax +++ cay)
-  (ConsQ fxb cax) +++ NilQ = (fxb +++ arr id) `ConsQ` (cax +++ NilQ)
-  NilQ +++ (ConsQ fxb cax) = (arr id +++ fxb) `ConsQ` (NilQ +++ cax)
-  NilQ +++ NilQ            = NilQ
 
 nilQ :: Queue (f :: k -> k -> *) a a
 nilQ = Queue NilTr NilTr NilTr
@@ -334,18 +283,6 @@ snocQ :: forall (f :: k -> k -> *) a b c.
       -> Queue f a c
 snocQ (Queue f r s) g = exec f (ConsTr (Op g) r) s
 {-# INLINE snocQ #-}
-
-pattern ConsQ :: f b c -> Queue f a b -> Queue f a c
-pattern ConsQ a as <- (unconsQ -> a :< as) where
-    ConsQ = consQ
-
-pattern NilQ :: () => a ~ b => Queue f a b
-pattern NilQ <- (unconsQ -> EmptyL) where
-    NilQ = nilQ
-
-#if __GLASGOW_HASKELL__ > 802
-{-# complete NilQ, ConsQ #-}
-#endif
 
 -- | 'foldr' of a 'Queue'
 --
@@ -473,6 +410,69 @@ hoistQ nat q = case q of
     hoistQ nat (hoistQ nat1 q) = hoistQ (nat . nat1) q
 
 #-}
+
+#if __GLASGOW_HASKELL__ >= 806
+instance (forall (x :: k) (y :: k). Show (f x y))
+      => Show (Queue f a b) where
+    show (Queue f r s) =
+        "Queue ("
+        ++ show f
+        ++ ") ("
+        ++ show r
+        ++ ") "
+        ++ show (lengthListTr s)
+#else
+instance Show (Queue f r s) where
+    show (Queue f r s) =
+        "Queue "
+      ++ show (lengthListTr f)
+      ++ " "
+      ++ show (lengthListTr r)
+      ++ " "
+      ++ show (lengthListTr s)
+#endif
+
+instance Category (Queue f) where
+    id  = NilQ
+    (.) = composeQ
+
+type instance AlgebraType0 Queue f = ()
+type instance AlgebraType  Queue c = Category c
+
+instance FreeAlgebra2 Queue where
+  liftFree2    = arrQ
+  foldNatFree2 = foldNatQ
+
+  codom2  = proof
+  forget2 = proof
+
+instance Semigroup (Queue f o o) where
+  f <> g = g `composeQ` f
+
+instance Monoid (Queue f o o) where
+  mempty = NilQ
+#if __GLASGOW_HASKELL__ < 804
+  mappend = (<>)
+#endif
+
+instance Arrow f => Arrow (Queue f) where
+  arr ab = arr ab `ConsQ` NilQ
+
+  (ConsQ fxb cax) *** (ConsQ fyb cay)
+                           = (fxb *** fyb)    `ConsQ` (cax *** cay)
+  (ConsQ fxb cax) *** NilQ = (fxb *** arr id) `ConsQ` (cax *** NilQ)
+  NilQ *** (ConsQ fxb cax) = (arr id *** fxb) `ConsQ` (NilQ *** cax)
+  NilQ *** NilQ            = NilQ
+
+instance ArrowZero f => ArrowZero (Queue f) where
+  zeroArrow = zeroArrow `ConsQ` NilQ
+
+instance ArrowChoice f => ArrowChoice (Queue f) where
+  (ConsQ fxb cax) +++ (ConsQ fyb cay)
+                           = (fxb +++ fyb)    `ConsQ` (cax +++ cay)
+  (ConsQ fxb cax) +++ NilQ = (fxb +++ arr id) `ConsQ` (cax +++ NilQ)
+  NilQ +++ (ConsQ fxb cax) = (arr id +++ fxb) `ConsQ` (NilQ +++ cax)
+  NilQ +++ NilQ            = NilQ
 
 --
 -- Internal API
