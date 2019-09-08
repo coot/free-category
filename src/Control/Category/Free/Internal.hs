@@ -178,7 +178,9 @@ type instance AlgebraType  ListTr c = Category c
 
 instance FreeAlgebra2 ListTr where
   liftFree2    = liftL
+  {-# INLINE liftFree2 #-}
   foldNatFree2 = foldNatL
+  {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
   forget2 = proof
@@ -441,7 +443,9 @@ type instance AlgebraType  Queue c = Category c
 
 instance FreeAlgebra2 Queue where
   liftFree2    = liftQ
+  {-# INLINE liftFree2 #-}
   foldNatFree2 = foldNatQ
+  {-# INLINE foldNatFree2 #-}
 
   codom2  = proof
   forget2 = proof
