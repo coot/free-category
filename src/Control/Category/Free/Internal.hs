@@ -121,6 +121,44 @@ lengthListTr :: ListTr f a b -> Int
 lengthListTr NilTr = 0
 lengthListTr (ConsTr _ xs) = 1 + lengthListTr xs
 
+composeL :: forall (f :: k -> k -> *) x y z.
+            ListTr f y z
+         -> ListTr f x y
+         -> ListTr f x z
+composeL (ConsTr x xs) ys = ConsTr x (xs . ys)
+composeL NilTr         ys = ys
+{-# INLINE [1] composeL #-}
+
+arrL :: forall (f :: k -> k -> *) x y.
+        f x y -> ListTr f x y
+arrL f = ConsTr f NilTr
+{-# INLINE [1] arrL #-}
+
+foldNatL :: forall (f :: k -> k -> *) c a b.
+            Category c
+         => (forall x y. f x y -> c x y)
+         -> ListTr f a b
+         -> c a b
+foldNatL _   NilTr     = id
+foldNatL fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
+{-# INLINE [1] foldNatL #-}
+
+{-# RULES
+
+"foldNatL/ConsTr"
+  forall (f :: f (v :: k) (w :: k))
+         (q :: ListTr f (u :: k) (v :: k))
+         (nat :: forall (x :: k) (y :: k). f x y -> c x y).
+  foldNatL nat (ConsTr f q) = nat f . foldNatL nat q
+
+"foldNatL/arrL"
+  forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
+         (g :: f v w)
+         (h :: ListTr f u v).
+    foldNatL nat (arrL g `composeL` h) = nat g . foldNatL nat h
+
+#-}
+
 #if __GLASGOW_HASKELL__ >= 806
 instance (forall (x :: k) (y :: k). Show (f x y)) => Show (ListTr f a b) where
     show NilTr         = "NilTr"
@@ -132,18 +170,15 @@ instance Show (ListTr f a b) where
 #endif
 
 instance Category (ListTr f) where
-  id = NilTr
-  (ConsTr x xs) . ys = ConsTr x (xs . ys)
-  NilTr         . ys = ys
+  id  = NilTr
+  (.) = composeL
 
 type instance AlgebraType0 ListTr f = ()
 type instance AlgebraType  ListTr c = Category c
 
 instance FreeAlgebra2 ListTr where
-  liftFree2 = \fab -> ConsTr fab NilTr
-
-  foldNatFree2 _   NilTr     = id
-  foldNatFree2 fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
+  liftFree2    = arrL
+  foldNatFree2 = foldNatL
 
   codom2  = proof
   forget2 = proof
