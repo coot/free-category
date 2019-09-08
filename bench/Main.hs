@@ -64,23 +64,23 @@ main = defaultMain
         [ bench "right right" $
            whnf
             (\c -> foldNatCat interpret c 0)
-            (fromListR (arrCat . Add) ints)
+            (fromListR (liftCat . Add) ints)
         , bench "right left" $
             whnf
               (\c -> foldNatCat interpret c 0)
-              (fromListRL (arrCat . Add) ints)
+              (fromListRL (liftCat . Add) ints)
         , bench "left left" $
             whnf
               (\c -> foldNatCat interpret c 0)
-              (fromListL (arrCat . Add) ints)
+              (fromListL (liftCat . Add) ints)
         , bench "left right" $
             whnf
               (\c -> foldNatCat interpret c 0)
-              (fromListLR (arrCat . Add) ints)
+              (fromListLR (liftCat . Add) ints)
         , bench "alternate" $
             whnf
               (\c -> foldNatCat interpret c 0)
-              (fromListM (arrCat . Add) ints)
+              (fromListM (liftCat . Add) ints)
         ]
 
       , bgroup "Queue"
