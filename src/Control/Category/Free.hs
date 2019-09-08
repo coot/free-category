@@ -37,13 +37,13 @@ module Control.Category.Free
 
       -- * Free Category based on Queue
     , Cat (Id)
-    , arrCat
+    , liftCat
     , consCat
     , foldNatCat
 
       -- * Free category (CPS style)
     , C (..)
-    , arrC
+    , liftC
     , consC
     , foldNatC
     , toC
@@ -143,17 +143,17 @@ compose Id f = f
 compose f Id = f
 {-# INLINE [1] compose #-}
 
-arrCat :: forall (f :: k -> k -> *) a b.
-          f a b
-       -> Cat f a b
-arrCat ab = Cat nilQ ab
-{-# INLINE [1] arrCat #-}
+liftCat :: forall (f :: k -> k -> *) a b.
+           f a b
+        -> Cat f a b
+liftCat ab = Cat nilQ ab
+{-# INLINE [1] liftCat #-}
 
 consCat :: forall (f :: k -> k -> *) a b c.
            f b c
         -> Cat f a b
         -> Cat f a c
-consCat bc ab = arrCat bc . ab
+consCat bc ab = liftCat bc . ab
 {-# INLINE [1] consCat #-}
 
 foldNatCat :: forall (f :: k -> k -> *)c a b.
@@ -183,21 +183,21 @@ foldNatCat nat (Cat q0 tr0) =
          (nat :: forall (x :: k) (y :: k). f x y -> c x y).
   foldNatCat nat (consCat f q) = nat f . foldNatCat nat q
 
-"foldNatCat/arrCat"
+"foldNatCat/liftCat"
   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
          (g :: f v w)
          (h :: Cat f u v).
-  foldNatCat nat (arrCat g `compose` h) = nat g . foldNatCat nat h
+  foldNatCat nat (liftCat g `compose` h) = nat g . foldNatCat nat h
 
 --"foldNatCat/id"     forall (g :: f v w) (h :: Cat f u v).
---                 foldNatCat Prelude.id (arrCat g `compose` h) = g . foldNatCat id h
+--                 foldNatCat Prelude.id (liftCat g `compose` h) = g . foldNatCat id h
 
 -- TODO: These two rules may never fire do to `Class op` rule.
 --
 -- "foldNatCat/foldMap"
 --   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
 --          (fs :: Monoid (c a a) => [f (a :: k) a]).
---   foldNatCat nat (foldMap arrCat fs) = foldMap nat fs
+--   foldNatCat nat (foldMap liftCat fs) = foldMap nat fs
 
 -- "foldNatCat/foldr"
 --   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
@@ -305,7 +305,7 @@ instance Show (Cat f a b) where
 #endif
 
 instance Arrow f => Arrow (Cat f) where
-    arr = arrCat . arr
+    arr = liftCat . arr
     {-# INLINE arr #-}
 
     Cat q tr *** Cat q' tr' =
@@ -322,7 +322,7 @@ instance Arrow f => Arrow (Cat f) where
     {-# INLINE (***) #-}
 
 instance ArrowZero f => ArrowZero (Cat f) where
-    zeroArrow = arrCat zeroArrow
+    zeroArrow = liftCat zeroArrow
 
 instance ArrowChoice f => ArrowChoice (Cat f) where
     Cat xb ax +++ Cat yb ay =
@@ -344,7 +344,7 @@ type instance AlgebraType  Cat c = Category c
 -- transitions embedded in 'Cat'.
 --
 instance FreeAlgebra2 Cat where
-  liftFree2    = arrCat
+  liftFree2    = liftCat
   foldNatFree2 = foldNatCat
 
   codom2  = proof
@@ -386,17 +386,17 @@ fromC :: C f a b -> ListTr f a b
 fromC = hoistFreeH2
 {-# INLINE fromC #-}
 
-arrC :: forall (f :: k -> k -> *) a b.
-        f a b
-     -> C f a b
-arrC = \f -> C $ \k -> k f
-{-# INLINE [1] arrC #-}
+liftC :: forall (f :: k -> k -> *) a b.
+         f a b
+      -> C f a b
+liftC = \f -> C $ \k -> k f
+{-# INLINE [1] liftC #-}
 
 consC :: forall (f :: k -> k -> *) a b c.
          f b c
       -> C f a b
       -> C f a c
-consC bc ab = arrC bc `composeC` ab
+consC bc ab = liftC bc `composeC` ab
 {-# INLINE [1] consC #-}
 
 foldNatC :: forall (f :: k -> k -> *) c a b.
@@ -415,11 +415,11 @@ foldNatC nat (C f) = f nat
          (nat :: forall (x :: k) (y :: k). f x y -> c x y).
   foldNatC nat (consC f q) = nat f . foldNatC nat q
 
-"foldNatC/arrC"
+"foldNatC/liftC"
   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
          (g :: f v w)
          (h :: C f u v).
-    foldNatC nat (arrC g `composeC` h) = nat g . foldNatC nat h
+  foldNatC nat (liftC g `composeC` h) = nat g . foldNatC nat h
 
 #-}
 
@@ -443,7 +443,8 @@ type instance AlgebraType0 C f = ()
 type instance AlgebraType  C c = Category c
 
 instance FreeAlgebra2 C where
-  liftFree2    = arrC
+  liftFree2    = liftC
+  {-# INLINE liftFree2 #-}
   foldNatFree2 = foldNatC
 
   codom2  = proof

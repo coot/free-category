@@ -129,10 +129,10 @@ composeL (ConsTr x xs) ys = ConsTr x (xs . ys)
 composeL NilTr         ys = ys
 {-# INLINE [1] composeL #-}
 
-arrL :: forall (f :: k -> k -> *) x y.
-        f x y -> ListTr f x y
-arrL f = ConsTr f NilTr
-{-# INLINE [1] arrL #-}
+liftL :: forall (f :: k -> k -> *) x y.
+         f x y -> ListTr f x y
+liftL f = ConsTr f NilTr
+{-# INLINE [1] liftL #-}
 
 foldNatL :: forall (f :: k -> k -> *) c a b.
             Category c
@@ -151,11 +151,11 @@ foldNatL fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
          (nat :: forall (x :: k) (y :: k). f x y -> c x y).
   foldNatL nat (ConsTr f q) = nat f . foldNatL nat q
 
-"foldNatL/arrL"
+"foldNatL/liftL"
   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
          (g :: f v w)
          (h :: ListTr f u v).
-    foldNatL nat (arrL g `composeL` h) = nat g . foldNatL nat h
+    foldNatL nat (liftL g `composeL` h) = nat g . foldNatL nat h
 
 #-}
 
@@ -177,7 +177,7 @@ type instance AlgebraType0 ListTr f = ()
 type instance AlgebraType  ListTr c = Category c
 
 instance FreeAlgebra2 ListTr where
-  liftFree2    = arrL
+  liftFree2    = liftL
   foldNatFree2 = foldNatL
 
   codom2  = proof
@@ -318,10 +318,10 @@ foldrQ  nat ab (ConsQ xd bx) = nat xd (foldrQ nat ab bx)
 
 #-}
 
-arrQ :: forall (f :: k -> k -> *) a b.
-        f a b -> Queue f a b
-arrQ = \fab -> ConsQ fab NilQ
-{-# INLINE [1] arrQ #-}
+liftQ :: forall (f :: k -> k -> *) a b.
+         f a b -> Queue f a b
+liftQ = \fab -> ConsQ fab NilQ
+{-# INLINE [1] liftQ #-}
 
 -- | Efficient fold of a queue into a category, analogous to 'foldM'.
 --
@@ -346,11 +346,11 @@ foldNatQ nat = foldrQ (\f c -> nat f . c) id
                  foldNatQ nat nilQ = id
 
 
-"foldNatC/arrQ"
+"foldNatC/liftQ"
   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
          (g :: f v w)
          (h :: Queue f u v).
-  foldNatQ nat (arrQ g `composeQ` h) = nat g . foldNatQ nat h
+  foldNatQ nat (liftQ g `composeQ` h) = nat g . foldNatQ nat h
 
 #-}
 
@@ -440,7 +440,7 @@ type instance AlgebraType0 Queue f = ()
 type instance AlgebraType  Queue c = Category c
 
 instance FreeAlgebra2 Queue where
-  liftFree2    = arrQ
+  liftFree2    = liftQ
   foldNatFree2 = foldNatQ
 
   codom2  = proof
