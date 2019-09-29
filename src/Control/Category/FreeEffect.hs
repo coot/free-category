@@ -21,7 +21,6 @@ import Control.Arrow (Kleisli (..))
 import Control.Category (Category (..))
 import Data.Functor.Identity (Identity (..))
 
-import Control.Category.Free (Cat)
 import Control.Algebra.Free2 (FreeAlgebra2 (..))
 import Data.Algebra.Free (AlgebraType, AlgebraType0, proof)
 
@@ -63,19 +62,30 @@ instance Monad m => FreeAlgebra2 (EffCat m) where
   codom2  = proof
   forget2 = proof
 
--- | Wrap a transition into a free category 'Cat' and then in
--- 'EffCat'
+-- | Wrap a transition into @'EffCat' cat@ for any free category 'cat' (e.g.
+-- 'Cat').
 --
-liftEffect :: Monad m => tr a b -> EffCat m (Cat tr) a b
+liftEffect :: ( Monad m
+              , FreeAlgebra2 cat
+              , AlgebraType0 cat tr
+              , Category    (cat tr)
+              )
+           => tr a b -> EffCat m (cat tr) a b
 liftEffect = liftFree2 . liftFree2
 
--- | Fold @'FreeLifing'@ category based on a free category @'Cat' tr@ using
--- a functor @tr x y -> c x y@.
+-- | Fold @'FreeLifing'@ category based on a free category @'cat' tr@ (e.g.
+-- @'Cat' tr@) using a functor @tr x y -> c x y@.
 --
 foldNatEffCat
-  :: (Monad m, EffectCategory c m)
+  :: ( Monad m
+     , FreeAlgebra2 cat
+     , AlgebraType  cat c
+     , AlgebraType0 cat tr
+     , Category    (cat tr)
+     , EffectCategory c m
+     )
   => (forall x y. tr x y -> c x y)
-  -> EffCat m (Cat tr) a b
+  -> EffCat m (cat tr) a b
   -> c a b
 foldNatEffCat nat = foldNatFree2 (foldNatFree2 nat)
 
