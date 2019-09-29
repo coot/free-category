@@ -1,7 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections #-}
@@ -12,6 +14,7 @@ import Prelude hiding (id, (.))
 import Control.Arrow (Kleisli (..))
 import Control.Category (Category (..))
 import Control.Monad (void)
+-- import Control.Algebra.Free2
 import Numeric.Natural (Natural)
 import Data.Functor (($>))
 import Data.Functor.Identity (Identity (..))
@@ -60,31 +63,35 @@ runLoggedOut (LoggedOut a) = a
 -- category (e.g. @'Kleisli' m@) then the data will be avalable on
 -- @'LoggedOut{} :: 'State' a st@.
 --
-data Tr a from to where
+data Tr a (from :: StateType) (to :: StateType) where
   Login
     :: SStateType to
-    -> Tr a (State a 'LoggedOutType) (State a to)
+    -> Tr a 'LoggedOutType to
 
   Logout
     :: Maybe a
-    -> Tr a (State a 'LoggedInType) (State a 'LoggedOutType)
+    -> Tr a 'LoggedInType 'LoggedOutType
 
   Access
-    :: Tr a (State a 'LoggedInType) (State a 'LoggedInType)
+    :: Tr a 'LoggedInType 'LoggedInType
 
 login :: Monad m
       => SStateType st
-      -> EffCat m (Cat (Tr a)) (State a 'LoggedOutType) (State a st)
+      -> EffCat m (Cat (Tr a)) 'LoggedOutType st
 login = liftEffect . Login
 
 logout :: Monad m
        => Maybe a
-       -> EffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
+       -> EffCat m (Cat (Tr a)) 'LoggedInType 'LoggedOutType
 logout = liftEffect . Logout
 
 access :: Monad m
-       => EffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedInType)
+       => EffCat m (Cat (Tr a)) 'LoggedInType 'LoggedInType
 access = liftEffect Access
+
+--
+-- Public API
+--
 
 type Username = String
 
@@ -148,6 +155,10 @@ handleLoginPure passwds passwd secret = HandleLogin
 
   handleAccess = AccessHandler (pure secret) $ \_ -> return LogoutHandler
 
+--
+-- Abstract State Machine Description
+--
+
 -- | Abstract access function
 --
 accessSecret
@@ -157,22 +168,43 @@ accessSecret
   -- @'HandleLogin'@ (with a small modifications) but this way we are able to
   -- test it with a pure @'HandleLogin'@ (see @'handleLoginPure'@).
   -> HandleLogin m String a
-  -> EffCat m (Cat (Tr a)) (State a 'LoggedOutType) (State a 'LoggedOutType)
-accessSecret 0 HandleLogin{handleAccessDenied}         = effect $ handleAccessDenied $> id
-accessSecret n HandleLogin{handleLogin} = effect $ do
-  st <- handleLogin
-  case st of
-    -- login success
-    Right accessHandler -> return $ handle accessHandler Nothing . login SLoggedIn
-    -- login failure
-    Left handler'       -> return $ accessSecret (pred n) handler'
- where
-  handle :: HandleAccess m a -> Maybe a -> EffCat m (Cat (Tr a)) (State a 'LoggedInType) (State a 'LoggedOutType)
-  handle LogoutHandler ma = logout ma
-  handle (AccessHandler accessHandler dataHandler) _ = effect $ do
-    a <- accessHandler
-    accessHandler' <- dataHandler a
-    return $ handle accessHandler' (Just a)
+  -> EffCat m (Cat (Tr a)) 'LoggedOutType 'LoggedOutType
+accessSecret 0 HandleLogin{handleAccessDenied}
+    = effect $ handleAccessDenied $> id
+
+accessSecret n HandleLogin{handleLogin}
+    = effect $ do
+        st <- handleLogin
+        case st of
+          -- login success
+          Right accessHandler -> return $ handle accessHandler Nothing . login SLoggedIn
+          -- login failure
+          Left handler'       -> return $ accessSecret (pred n) handler'
+       where
+        handle :: HandleAccess m a
+               -> Maybe a
+               -> EffCat m (Cat (Tr a)) 'LoggedInType 'LoggedOutType
+        handle LogoutHandler ma = logout ma
+        handle (AccessHandler accessHandler dataHandler) _ = effect $ do
+          a <- accessHandler
+          accessHandler' <- dataHandler a
+          return $ handle accessHandler' (Just a)
+
+--
+-- Run Abstract State Machine
+--
+
+newtype KleisliS m a (from :: StateType) (to :: StateType)
+    = KleisliS { runKleisliS :: Kleisli m (State a from) (State a to) }
+
+instance Monad m => Category (KleisliS m a) where
+    id = KleisliS id
+    KleisliS f . KleisliS g = KleisliS (f . g)
+
+instance Monad m => EffectCategory (KleisliS m a) m where
+    effect mf = KleisliS $ Kleisli $ \a -> mg >>= \g -> g a
+      where
+        mg = runKleisli . runKleisliS <$> mf
 
 -- | Get data following the protocol defined by the state machine.
 --
@@ -180,12 +212,12 @@ accessSecret n HandleLogin{handleLogin} = effect $ do
 -- @'Identity'@ monad.  To avoid this we use the @'runLoggedOut'@ function.
 getData
   :: forall m a . Monad m
-  => (forall x y. Tr a x y -> Kleisli m x y)
+  => (forall x y. Tr a x y -> KleisliS m a x y)
   -> Natural
   -> HandleLogin m String a
   -> m (Maybe a)
 getData nat n handleLogin = case foldNatEffCat nat (accessSecret n handleLogin) of
-  Kleisli fn -> do
+  KleisliS (Kleisli fn) -> do
     ma <- runLoggedOut <$> fn (LoggedOut Nothing)
     return ma
 
@@ -200,16 +232,22 @@ getData nat n handleLogin = case foldNatEffCat nat (accessSecret n handleLogin) 
 -- This is because we will need the monad whn @'foldNatLift'@ will walk over the
 -- constructors of the '@FreeLifting'@ category.
 --
-natPure :: forall m a from to. Monad m => Tr a from to -> Kleisli m from to
-natPure = liftKleisli . nat
+natPure :: forall m a from to.
+           Monad m
+        => Tr a from to
+        -> KleisliS m a from to
+natPure = KleisliS . liftKleisli . nat
  where
   -- a natural trasformation to @'->'@
-  nat :: Tr a from to -> (from -> to)
+  nat :: Tr a from to
+      -> (State a from -> State a to)
   nat (Login SLoggedIn)  = \_ -> LoggedIn
   nat (Login SLoggedOut) = \_ -> LoggedOut Nothing
   nat (Logout ma)        = \_ -> LoggedOut ma
   nat Access             = \_ -> LoggedIn
 
+-- | QuickCheck property test using 'Identity' monad (e.g. pure monad)
+--
 prop_getData
   :: NonEmptyList String
   -> String
