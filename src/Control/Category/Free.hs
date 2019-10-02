@@ -31,6 +31,7 @@ module Control.Category.Free
     , consQ
     , snocQ
     , unconsQ
+    , liftQ
     , foldNatQ
     , foldrQ
     , foldlQ
