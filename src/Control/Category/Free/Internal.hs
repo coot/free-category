@@ -30,8 +30,11 @@ module Control.Category.Free.Internal
   ( Op (..)
   , hoistOp
   , ListTr (..)
+  , liftL
+  , foldNatL
   , lengthListTr
   , Queue (NilQ, ConsQ)
+  , liftQ
   , nilQ
   , consQ
   , ViewL (..)
