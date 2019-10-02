@@ -151,6 +151,9 @@ foldNatL fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
          (nat :: forall (x :: k) (y :: k). f x y -> c x y).
   foldNatL nat (ConsTr f q) = nat f . foldNatL nat q
 
+"foldNatL/NilTr"  forall (nat :: forall (x :: k) (y :: k). f x y -> c x y).
+                  foldNatL nat NilTr = id
+
 "foldNatL/liftL"
   forall (nat :: forall (x :: k) (y :: k). f x y -> c x y)
          (g :: f v w)
