@@ -54,13 +54,19 @@ fromListM f iss = foldl' (\c (is, x) -> if x then c . fromListM' f is
                                              else fromListM' f is . c)
                         id (zip iss (concat $ repeat [True, False]))
 
-setupEnv :: [[Int]]
-setupEnv = replicate 100 [1..100]
+setupEnv100 :: [[Int]]
+setupEnv100 = replicate 100 [1..100]
+
+setupEnv250 :: [[Int]]
+setupEnv250 = replicate 250 [1..250]
+
+setupEnv500 :: [[Int]]
+setupEnv500 = replicate 500 [1..500]
 
 main :: IO ()
 main = defaultMain
-    [ env (pure setupEnv) $ \ints -> bgroup "main"
-      [ bgroup "Cat" $
+    [ env (pure setupEnv100) $ \ints -> bgroup "main"
+      [ bgroup "Cat 100" $
         [ bench "right right" $
            whnf
             (\c -> foldNatCat interpret c 0)
@@ -83,53 +89,53 @@ main = defaultMain
               (fromListM (liftCat . Add) ints)
         ]
 
-      , bgroup "Queue"
+      , bgroup "Queue 100"
         [ bench "right right" $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
-              (fromListR (\i -> ConsQ (Add i) NilQ) ints)
+              (\c -> foldNatQ interpret c 0)
+              (fromListR (\i -> liftQ (Add i)) ints)
         , bench "right left" $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
-              (fromListRL (\i -> ConsQ (Add i) NilQ) ints)
+              (\c -> foldNatQ interpret c 0)
+              (fromListRL (\i -> liftQ (Add i)) ints)
         , bench "left left " $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
-              (fromListL (\i -> ConsQ (Add i) NilQ) ints)
+              (\c -> foldNatQ interpret c 0)
+              (fromListL (\i -> liftQ (Add i)) ints)
         , bench "left right" $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
-              (fromListLR (\i -> ConsQ (Add i) NilQ) ints)
+              (\c -> foldNatQ interpret c 0)
+              (fromListLR (\i -> liftQ (Add i)) ints)
         , bench "alternate " $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
-              (fromListM (\i -> ConsQ (Add i) NilQ) ints)
+              (\c -> foldNatQ interpret c 0)
+              (fromListM (\i -> liftQ (Add i)) ints)
         ]
 
-      , bgroup "ListTr"
+      , bgroup "ListTr 100"
         [ bench "right right" $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
-              (fromListR (\i -> ConsTr (Add i) NilTr) ints)
+              (\c -> foldNatL interpret c 0)
+              (fromListR (\i -> liftL (Add i)) ints)
         , bench "right left" $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
-              (fromListRL (\i -> ConsTr (Add i) NilTr) ints)
+              (\c -> foldNatL interpret c 0)
+              (fromListRL (\i -> liftL (Add i)) ints)
         , bench "left left " $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
-              (fromListL (\i -> ConsTr (Add i) NilTr) ints)
+              (\c -> foldNatL interpret c 0)
+              (fromListL (\i -> liftL (Add i)) ints)
         , bench "left right" $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
-              (fromListLR (\i -> ConsTr (Add i) NilTr) ints)
+              (\c -> foldNatL interpret c 0)
+              (fromListLR (\i -> liftL (Add i)) ints)
         , bench "alternate " $
             whnf
-              (\c -> foldNatFree2 interpret c 0)
+              (\c -> foldNatL interpret c 0)
               (fromListM (\i -> ConsTr (Add i) NilTr) ints)
         ]
 
-      , bgroup "C"
+      , bgroup "C 100"
         [ bench "right right" $
             whnf
               (\c -> foldNatFree2 interpret c 0)
@@ -151,6 +157,72 @@ main = defaultMain
               (\c -> foldNatFree2 interpret c 0)
               (fromListM ((\i -> C $ \k -> k (Add i))) ints)
         ]
+      ]
+    , env (pure setupEnv250) $ \ints -> bgroup "main"
+      {--
+        - [ bgroup "Cat 250" $
+        -   [ bench "right right" $
+        -      whnf
+        -       (\c -> foldNatCat interpret c 0)
+        -       (fromListR (liftCat . Add) ints)
+        -   ]
+        --}
+
+      [ bgroup "Queue 250"
+        [ bench "right right" $
+            whnf
+              (\c -> foldNatQ interpret c 0)
+              (fromListR (\i -> liftQ (Add i)) ints)
+        ]
+
+      , bgroup "ListTr 250"
+        [ bench "right right" $
+            whnf
+              (\c -> foldNatL interpret c 0)
+              (fromListR (\i -> liftL (Add i)) ints)
+        ]
+
+      {--
+        - , bgroup "C 250"
+        -   [ bench "right right" $
+        -       whnf
+        -         (\c -> foldNatFree2 interpret c 0)
+        -         (fromListR ((\i -> C $ \k -> k (Add i))) ints)
+        -   ]
+        --}
+      ]
+    , env (pure setupEnv500) $ \ints -> bgroup "main"
+      {--
+        - [ bgroup "Cat 500" $
+        -   [ bench "right right" $
+        -      whnf
+        -       (\c -> foldNatCat interpret c 0)
+        -       (fromListR (liftCat . Add) ints)
+        -   ]
+        --}
+
+      [ bgroup "Queue 500"
+        [ bench "right right" $
+            whnf
+              (\c -> foldNatQ interpret c 0)
+              (fromListR (\i -> liftQ (Add i)) ints)
+        ]
+
+      , bgroup "ListTr 500"
+        [ bench "right right" $
+            whnf
+              (\c -> foldNatL interpret c 0)
+              (fromListR (\i -> liftL (Add i)) ints)
+        ]
+
+      {--
+        - , bgroup "C 500"
+        -   [ bench "right right" $
+        -       whnf
+        -         (\c -> foldNatFree2 interpret c 0)
+        -         (fromListR ((\i -> C $ \k -> k (Add i))) ints)
+        -   ]
+        --}
       ]
     ]
 
