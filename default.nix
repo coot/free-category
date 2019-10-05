@@ -24,6 +24,9 @@ let
   doDev = if dev
     then drv: lib.appendConfigureFlag drv "--ghc-option -Werror"
     else nixpkgs.lib.id;
+  noInlineRuleShadowing = if compiler == "ghc802"
+    then drv: lib.appendConfigureFlag drv "--ghc-option -Wno-inline-rule-shadowing"
+    else nixpkgs.lib.id;
   docNoSeprateOutput = drv: lib.overrideCabal drv (drv: { enableSeparateDocOutput = false; });
   srcFilter = src: path: type:
     let relPath = nixpkgs.lib.removePrefix (toString src + "/") (toString path);
@@ -35,10 +38,10 @@ let
         (a: a == relPath)
         [ "Setup.hs" "cabal.project" "ChangeLog.md" "free-category.cabal" "LICENSE"];
 
-  free-category = docNoSeprateOutput(doDev(doHaddock(doTest(doBench(
+  free-category = noInlineRuleShadowing(docNoSeprateOutput(doDev(doHaddock(doTest(doBench(
     lib.overrideCabal (callCabal2nix "free-category" ./.  {})
       (drv: {src = nixpkgs.lib.cleanSourceWith { filter = srcFilter drv.src; src = drv.src; };})
-  )))));
+  ))))));
   examples = docNoSeprateOutput(doDev(doHaddock(doTest(doBench(
     lib.overrideCabal (callCabal2nix "examples" ./examples { inherit free-category; })
       (drv: {src = nixpkgs.lib.sourceFilesBySuffices drv.src [ ".hs" "LICENSE" "ChangeLog.md" "examples.cabal" ];})
