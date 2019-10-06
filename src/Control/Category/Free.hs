@@ -35,11 +35,15 @@ module Control.Category.Free
     , foldNatQ
     , foldrQ
     , foldlQ
+    , zipWithQ
 
       -- * Type alligned list
     , ListTr (..)
     , liftL
     , foldNatL
+    , foldlL
+    , foldrL
+    , zipWithL
 
       -- * Free Category based on Queue
     , Cat (Id)

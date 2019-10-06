@@ -33,6 +33,9 @@ module Control.Category.Free.Internal
   , liftL
   , foldNatL
   , lengthListTr
+  , foldrL
+  , foldlL
+  , zipWithL
   , Queue (NilQ, ConsQ)
   , liftQ
   , nilQ
@@ -164,6 +167,42 @@ foldNatL fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
     foldNatL nat (liftL g `composeL` h) = nat g . foldNatL nat h
 
 #-}
+
+-- | 'foldr' of a 'ListTr'
+--
+foldrL :: forall (f :: k -> k -> *) c a b d.
+          (forall x y z. f y z -> c x y -> c x z)
+       -> c a b
+       -> ListTr f b d
+       -> c a d
+foldrL _nat ab NilTr          = ab
+foldrL  nat ab (ConsTr xd bx) = nat xd (foldrL nat ab bx)
+{-# INLINE [1] foldrL #-}
+
+-- | 'foldl' of a 'ListTr'
+--
+-- TODO: make it strict, like 'foldl''.
+--
+foldlL :: forall (f :: k -> k -> *) c a b d.
+          (forall x y z. c y z -> f x y -> c x z)
+       -> c b d
+       -> ListTr f a b
+       -> c a d
+foldlL _nat bd NilTr          = bd
+foldlL  nat bd (ConsTr xb ax) = foldlL nat (nat bd xb) ax
+
+zipWithL :: forall f g a b a' b'.
+        Category f
+     => (forall x y x' y'. f x y -> f x' y' -> f (g x x') (g y y'))
+     -> ListTr f a  b
+     -> ListTr f a' b'
+     -> ListTr f (g a a') (g b b')
+zipWithL fn queueA queueB = case (queueA, queueB) of
+    (NilTr, NilTr) -> NilTr
+    (NilTr, ConsTr trB' queueB') -> ConsTr (id   `fn` trB') (zipWithL fn NilTr    queueB')
+    (ConsTr trA' queueA', NilTr) -> ConsTr (trA' `fn` id)   (zipWithL fn queueA' NilTr)
+    (ConsTr trA' queueA', ConsTr trB' queueB')
+                                 -> ConsTr (trA' `fn` trB') (zipWithL fn queueA' queueB')
 
 #if __GLASGOW_HASKELL__ >= 806
 instance (forall (x :: k) (y :: k). Show (f x y)) => Show (ListTr f a b) where
