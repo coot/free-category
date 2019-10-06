@@ -4,25 +4,26 @@
 
 This package contains efficient free categories. There are a few presentations based on:
 
-* realtime queues (C. Okasaki 'Pure Functional Data Structures')
+* real-time queues (C. Okasaki 'Pure Functional Data Structures')
+* type aligned lists
 * continuation passing style
 
 Free arrows and free Kleisli categories are also included.
 
 Free categories are useful to model state machines in a simple yet type safe
-manner.  For that purpose `Kleisli` categroies are a very useful target which
-allows to include monadic computations.  This packge contains a useful
-generalisation of `Kliesli` categories captured by `EffCategory` class
-(effectful categories), and a (free) transformer which lifts a category to
-an effectful one.
+manner.  For that purpose `Kleisli` categories are a very useful target which
+allows to include monadic computations.  This package contains a useful
+generalisation of `Kliesli` categories captured by `EffectCategory` class
+(categories with effects), and a (free) transformer which lifts a category to
+a category with effects.
 
 ## Benchmarks
 
-Check performence characteristics of various presentations free categories:
+Check performance characteristics of various presentations free categories:
 
-* [report-O0](/bench/raport-O0.md)
-* [report-O1](/bench/raport-O1.md)
-* [report-O2](/bench/raport-O2.md)
+* [report-O0](/bench/report-O0.md)
+* [report-O1](/bench/report-O1.md)
+* [report-O2](/bench/report-O2.md)
 
 ## Some examples
 * [LoginStateMachine](https://github.com/coot/free-category/blob/master/examples/src/LoginStateMachine.hs):
@@ -34,4 +35,4 @@ Check performence characteristics of various presentations free categories:
   using a simple GADT.
 * Another
   [example](https://github.com/coot/free-algebras/blob/master/examples/src/Control/Category/Free.hs).
-* [Blog post](https://coot.me/posts/kleisli-categories-and-free-monads.html) on Keleisli categories.
+* [Blog post](https://coot.me/posts/kleisli-categories-and-free-monads.html) on Kleisli categories.
