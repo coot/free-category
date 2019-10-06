@@ -36,6 +36,11 @@ module Control.Category.Free
     , foldrQ
     , foldlQ
 
+      -- * Type alligned list
+    , ListTr (..)
+    , liftL
+    , foldNatL
+
       -- * Free Category based on Queue
     , Cat (Id)
     , liftCat
