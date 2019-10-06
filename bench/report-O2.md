@@ -1,135 +1,160 @@
 ```
-cabal run -O2 bench-cats
-benchmarking main/Cat/right right
-time                 417.7 μs   (415.7 μs .. 419.7 μs)
+cabal run -O2 bench-cats                                               
+benchmarking main/Cat 100/right right
+time                 387.7 μs   (382.0 μs .. 396.1 μs)
+                     0.997 R²   (0.992 R² .. 1.000 R²)
+mean                 382.3 μs   (378.8 μs .. 389.3 μs)
+std dev              15.61 μs   (9.528 μs .. 27.64 μs)
+variance introduced by outliers: 35% (moderately inflated)
+
+benchmarking main/Cat 100/right left
+time                 1.902 ms   (1.885 ms .. 1.919 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 1.926 ms   (1.911 ms .. 1.943 ms)
+std dev              55.12 μs   (41.26 μs .. 90.08 μs)
+variance introduced by outliers: 15% (moderately inflated)
+
+benchmarking main/Cat 100/left left
+time                 1.941 ms   (1.924 ms .. 1.958 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 1.937 ms   (1.929 ms .. 1.947 ms)
+std dev              30.60 μs   (23.82 μs .. 41.19 μs)
+
+benchmarking main/Cat 100/left right
+time                 1.946 ms   (1.895 ms .. 2.034 ms)
+                     0.994 R²   (0.988 R² .. 0.999 R²)
+mean                 1.982 ms   (1.957 ms .. 2.009 ms)
+std dev              86.70 μs   (66.65 μs .. 112.2 μs)
+variance introduced by outliers: 30% (moderately inflated)
+
+benchmarking main/Cat 100/alternate
+time                 1.700 ms   (1.605 ms .. 1.902 ms)
+                     0.954 R²   (0.904 R² .. 1.000 R²)
+mean                 1.641 ms   (1.614 ms .. 1.740 ms)
+std dev              159.2 μs   (28.75 μs .. 334.0 μs)
+variance introduced by outliers: 69% (severely inflated)
+
+benchmarking main/Queue 100/right right
+time                 341.9 μs   (341.2 μs .. 342.8 μs)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 418.3 μs   (416.6 μs .. 420.0 μs)
-std dev              5.762 μs   (4.583 μs .. 7.364 μs)
+mean                 340.9 μs   (340.0 μs .. 341.9 μs)
+std dev              3.115 μs   (2.201 μs .. 4.603 μs)
 
-benchmarking main/Cat/right left
-time                 1.968 ms   (1.953 ms .. 1.990 ms)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 1.977 ms   (1.959 ms .. 2.000 ms)
-std dev              68.00 μs   (53.52 μs .. 84.49 μs)
-variance introduced by outliers: 20% (moderately inflated)
-
-benchmarking main/Cat/left left
-time                 1.958 ms   (1.942 ms .. 1.975 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 1.969 ms   (1.959 ms .. 1.983 ms)
-std dev              41.30 μs   (31.26 μs .. 57.77 μs)
-
-benchmarking main/Cat/left right
-time                 1.958 ms   (1.934 ms .. 1.982 ms)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 1.953 ms   (1.943 ms .. 1.962 ms)
-std dev              31.57 μs   (24.84 μs .. 42.80 μs)
-
-benchmarking main/Cat/alternate
-time                 1.655 ms   (1.641 ms .. 1.670 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 1.648 ms   (1.638 ms .. 1.656 ms)
-std dev              30.06 μs   (24.24 μs .. 37.57 μs)
-
-benchmarking main/Queue/right right
-time                 359.4 μs   (357.7 μs .. 361.4 μs)
+benchmarking main/Queue 100/right left
+time                 342.2 μs   (341.6 μs .. 342.8 μs)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 361.4 μs   (360.2 μs .. 363.5 μs)
-std dev              5.338 μs   (3.727 μs .. 9.423 μs)
+mean                 341.5 μs   (340.9 μs .. 342.2 μs)
+std dev              2.108 μs   (1.700 μs .. 2.556 μs)
 
-benchmarking main/Queue/right left
-time                 359.6 μs   (357.8 μs .. 361.7 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 359.4 μs   (357.1 μs .. 363.2 μs)
-std dev              9.314 μs   (6.026 μs .. 16.40 μs)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking main/Queue/left left 
-time                 364.9 μs   (361.2 μs .. 368.5 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 362.4 μs   (359.7 μs .. 366.1 μs)
-std dev              10.49 μs   (8.487 μs .. 14.03 μs)
-variance introduced by outliers: 22% (moderately inflated)
-
-benchmarking main/Queue/left right
-time                 364.9 μs   (359.4 μs .. 372.7 μs)
-                     0.998 R²   (0.997 R² .. 1.000 R²)
-mean                 364.3 μs   (361.8 μs .. 367.9 μs)
-std dev              10.03 μs   (7.286 μs .. 14.05 μs)
-variance introduced by outliers: 20% (moderately inflated)
-
-benchmarking main/Queue/alternate 
-time                 348.9 μs   (346.4 μs .. 351.5 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 351.0 μs   (349.2 μs .. 353.1 μs)
-std dev              6.883 μs   (5.020 μs .. 9.645 μs)
-variance introduced by outliers: 11% (moderately inflated)
-
-benchmarking main/ListTr/right right
-time                 699.2 μs   (695.2 μs .. 702.4 μs)
+benchmarking main/Queue 100/left left 
+time                 341.5 μs   (341.1 μs .. 342.2 μs)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 695.1 μs   (692.3 μs .. 698.8 μs)
-std dev              10.80 μs   (8.155 μs .. 15.39 μs)
+mean                 341.9 μs   (341.2 μs .. 343.3 μs)
+std dev              3.117 μs   (1.865 μs .. 5.348 μs)
 
-benchmarking main/ListTr/right left
-time                 707.9 μs   (696.8 μs .. 723.4 μs)
-                     0.996 R²   (0.992 R² .. 0.999 R²)
-mean                 700.7 μs   (692.7 μs .. 713.5 μs)
-std dev              31.72 μs   (19.64 μs .. 51.81 μs)
-variance introduced by outliers: 37% (moderately inflated)
-
-benchmarking main/ListTr/left left 
-time                 700.4 μs   (695.8 μs .. 706.9 μs)
-                     0.998 R²   (0.995 R² .. 1.000 R²)
-mean                 702.7 μs   (698.0 μs .. 715.4 μs)
-std dev              24.32 μs   (11.51 μs .. 46.45 μs)
-variance introduced by outliers: 26% (moderately inflated)
-
-benchmarking main/ListTr/left right
-time                 703.8 μs   (691.8 μs .. 714.6 μs)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 695.4 μs   (691.5 μs .. 699.8 μs)
-std dev              13.95 μs   (10.12 μs .. 18.83 μs)
-variance introduced by outliers: 11% (moderately inflated)
-
-benchmarking main/ListTr/alternate 
-time                 706.3 μs   (700.2 μs .. 713.1 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 694.8 μs   (690.7 μs .. 699.6 μs)
-std dev              14.73 μs   (12.14 μs .. 19.85 μs)
-variance introduced by outliers: 12% (moderately inflated)
-
-benchmarking main/C/right right
-time                 764.5 μs   (758.7 μs .. 769.3 μs)
+benchmarking main/Queue 100/left right
+time                 344.0 μs   (342.7 μs .. 345.8 μs)
                      1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 756.4 μs   (753.1 μs .. 760.1 μs)
-std dev              11.93 μs   (9.724 μs .. 14.72 μs)
+mean                 344.5 μs   (343.2 μs .. 346.5 μs)
+std dev              5.442 μs   (4.365 μs .. 7.546 μs)
 
-benchmarking main/C/right left
-time                 722.2 μs   (703.6 μs .. 741.4 μs)
-                     0.996 R²   (0.994 R² .. 0.999 R²)
-mean                 701.7 μs   (695.8 μs .. 712.3 μs)
-std dev              26.03 μs   (17.36 μs .. 41.34 μs)
-variance introduced by outliers: 29% (moderately inflated)
+benchmarking main/Queue 100/alternate 
+time                 359.1 μs   (343.2 μs .. 378.1 μs)
+                     0.989 R²   (0.979 R² .. 0.999 R²)
+mean                 347.1 μs   (343.3 μs .. 357.3 μs)
+std dev              19.80 μs   (10.27 μs .. 35.11 μs)
+variance introduced by outliers: 53% (severely inflated)
 
-benchmarking main/C/left left
-time                 811.6 μs   (799.5 μs .. 828.3 μs)
-                     0.974 R²   (0.949 R² .. 0.994 R²)
-mean                 897.2 μs   (857.3 μs .. 966.8 μs)
-std dev              177.5 μs   (114.9 μs .. 283.1 μs)
-variance introduced by outliers: 93% (severely inflated)
-
-benchmarking main/C/left right
-time                 720.7 μs   (707.1 μs .. 741.5 μs)
-                     0.990 R²   (0.980 R² .. 0.998 R²)
-mean                 733.5 μs   (719.8 μs .. 755.1 μs)
-std dev              58.97 μs   (37.58 μs .. 86.10 μs)
-variance introduced by outliers: 65% (severely inflated)
-
-benchmarking main/C/alternate
-time                 1.088 ms   (1.079 ms .. 1.096 ms)
+benchmarking main/ListTr 100/right right
+time                 175.0 μs   (174.3 μs .. 176.0 μs)
                      0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 1.094 ms   (1.088 ms .. 1.103 ms)
-std dev              23.88 μs   (16.62 μs .. 38.52 μs)
-variance introduced by outliers: 11% (moderately inflated)
+mean                 175.8 μs   (174.8 μs .. 178.3 μs)
+std dev              5.004 μs   (2.051 μs .. 9.617 μs)
+variance introduced by outliers: 24% (moderately inflated)
+
+benchmarking main/ListTr 100/right left
+time                 175.2 μs   (174.2 μs .. 176.4 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 175.3 μs   (174.6 μs .. 176.2 μs)
+std dev              2.866 μs   (2.014 μs .. 4.405 μs)
+
+benchmarking main/ListTr 100/left left 
+time                 178.8 μs   (175.7 μs .. 182.2 μs)
+                     0.998 R²   (0.998 R² .. 1.000 R²)
+mean                 177.0 μs   (175.6 μs .. 179.9 μs)
+std dev              6.350 μs   (3.620 μs .. 11.78 μs)
+variance introduced by outliers: 33% (moderately inflated)
+
+benchmarking main/ListTr 100/left right
+time                 174.2 μs   (173.3 μs .. 175.6 μs)
+                     0.999 R²   (0.998 R² .. 0.999 R²)
+mean                 180.9 μs   (178.4 μs .. 184.9 μs)
+std dev              10.83 μs   (7.423 μs .. 16.29 μs)
+variance introduced by outliers: 59% (severely inflated)
+
+benchmarking main/ListTr 100/alternate 
+time                 173.9 μs   (173.0 μs .. 175.0 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 173.5 μs   (173.0 μs .. 174.1 μs)
+std dev              1.951 μs   (1.514 μs .. 2.633 μs)
+
+benchmarking main/C 100/right right
+time                 798.5 μs   (792.7 μs .. 803.5 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 797.5 μs   (793.5 μs .. 800.9 μs)
+std dev              11.98 μs   (9.948 μs .. 15.01 μs)
+
+benchmarking main/C 100/right left
+time                 679.3 μs   (670.8 μs .. 691.7 μs)
+                     0.998 R²   (0.997 R² .. 0.998 R²)
+mean                 686.6 μs   (678.4 μs .. 695.5 μs)
+std dev              27.59 μs   (25.17 μs .. 30.52 μs)
+variance introduced by outliers: 32% (moderately inflated)
+
+benchmarking main/C 100/left left
+time                 780.6 μs   (776.9 μs .. 783.9 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 775.6 μs   (772.1 μs .. 778.7 μs)
+std dev              10.92 μs   (8.476 μs .. 15.08 μs)
+
+benchmarking main/C 100/left right
+time                 601.6 μs   (598.7 μs .. 604.4 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 607.9 μs   (602.8 μs .. 616.0 μs)
+std dev              20.49 μs   (15.07 μs .. 26.09 μs)
+variance introduced by outliers: 25% (moderately inflated)
+
+benchmarking main/C 100/alternate
+time                 1.045 ms   (987.6 μs .. 1.161 ms)
+                     0.940 R²   (0.867 R² .. 0.999 R²)
+mean                 1.016 ms   (986.8 μs .. 1.107 ms)
+std dev              152.4 μs   (57.42 μs .. 296.9 μs)
+variance introduced by outliers: 86% (severely inflated)
+
+benchmarking main/Queue 250/right right
+time                 2.733 ms   (2.700 ms .. 2.764 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 2.694 ms   (2.676 ms .. 2.710 ms)
+std dev              56.66 μs   (45.91 μs .. 76.23 μs)
+
+benchmarking main/ListTr 250/right right
+time                 3.356 ms   (3.175 ms .. 3.551 ms)
+                     0.979 R²   (0.968 R² .. 0.989 R²)
+mean                 3.425 ms   (3.315 ms .. 3.587 ms)
+std dev              422.6 μs   (296.3 μs .. 610.7 μs)
+variance introduced by outliers: 74% (severely inflated)
+
+benchmarking main/Queue 500/right right
+time                 11.27 ms   (10.84 ms .. 11.78 ms)
+                     0.985 R²   (0.973 R² .. 0.993 R²)
+mean                 12.36 ms   (11.94 ms .. 12.99 ms)
+std dev              1.344 ms   (995.0 μs .. 1.928 ms)
+variance introduced by outliers: 56% (severely inflated)
+
+benchmarking main/ListTr 500/right right
+time                 18.27 ms   (17.13 ms .. 19.35 ms)
+                     0.986 R²   (0.975 R² .. 0.998 R²)
+mean                 18.14 ms   (17.70 ms .. 18.98 ms)
+std dev              1.466 ms   (866.9 μs .. 2.203 ms)
+variance introduced by outliers: 35% (moderately inflated)
 ```
