@@ -41,7 +41,7 @@ import           Control.Algebra.Free2
   ( AlgebraType0
   , AlgebraType
   , FreeAlgebra2 (..)
-  , proof
+  , Proof (..)
   , wrapFree2
   , foldFree2
   , hoistFree2
@@ -109,8 +109,8 @@ instance FreeAlgebra2 Arr where
   foldNatFree2 = foldArr
   {-# INLINE foldNatFree2 #-}
 
-  codom2  = proof
-  forget2 = proof
+  codom2  = Proof
+  forget2 = Proof
 
 --
 -- Free arrows using CSP style
@@ -166,5 +166,5 @@ instance FreeAlgebra2 A where
   foldNatFree2 fun (A f) = f fun
   {-# INLINE foldNatFree2 #-}
 
-  codom2  = proof
-  forget2 = proof
+  codom2  = Proof
+  forget2 = Proof

@@ -71,7 +71,7 @@ import           Control.Algebra.Free2
                   ( AlgebraType0
                   , AlgebraType
                   , FreeAlgebra2 (..)
-                  , proof
+                  , Proof (..)
                   , wrapFree2
                   , foldFree2
                   , hoistFree2
@@ -347,8 +347,8 @@ instance FreeAlgebra2 Cat where
   foldNatFree2 = foldNatCat
   {-# INLINE foldNatFree2 #-}
 
-  codom2  = proof
-  forget2 = proof
+  codom2  = Proof
+  forget2 = Proof
 
 
 --
@@ -449,8 +449,8 @@ instance FreeAlgebra2 C where
   foldNatFree2 = foldNatC
   {-# INLINE foldNatFree2 #-}
 
-  codom2  = proof
-  forget2 = proof
+  codom2  = Proof
+  forget2 = Proof
 
 instance Arrow f => Arrow (C f) where
   arr ab = C $ \k -> k (arr ab)

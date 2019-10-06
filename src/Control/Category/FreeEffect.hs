@@ -22,7 +22,7 @@ import Control.Category (Category (..))
 import Data.Functor.Identity (Identity (..))
 
 import Control.Algebra.Free2 (FreeAlgebra2 (..))
-import Data.Algebra.Free (AlgebraType, AlgebraType0, proof)
+import Data.Algebra.Free (AlgebraType, AlgebraType0, Proof (..))
 
 
 -- | Categories which can lift monadic actions, i.e. effectful categories.
@@ -59,8 +59,8 @@ instance Monad m => FreeAlgebra2 (EffCat m) where
   foldNatFree2 nat (Base cab)    = nat cab
   foldNatFree2 nat (Effect mcab) = effect $ foldNatFree2 nat <$> mcab
 
-  codom2  = proof
-  forget2 = proof
+  codom2  = Proof
+  forget2 = Proof
 
 -- | Wrap a transition into @'EffCat' cat@ for any free category 'cat' (e.g.
 -- 'Cat').
