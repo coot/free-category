@@ -26,3 +26,5 @@
     - `liftCat` to `liftEffect`
     - `foldNatLift` to `foldNatEffCat`
 - Show instance of 'Cat' and 'C' via 'ListTr' (GHC >= 806)
+- Export ListTr from Control.Category.Free
+- foldrL, foldlL and zipWithL
