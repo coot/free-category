@@ -27,9 +27,7 @@ import           Text.Show.Functions ()
 import           Numeric.Natural (Natural)
 
 import           Control.Algebra.Free2
-
 import           Control.Category.Free
-import           Control.Category.Free.Internal
 
 import           Test.QuickCheck
 import           Test.Tasty (TestTree, testGroup)
