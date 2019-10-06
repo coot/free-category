@@ -11,7 +11,7 @@ commands:
       - run:
           name: "nix"
           command: |
-            nix-channel --add https://nixos.org/channels/nixpkgs-unstable
+            nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
             nix-channel --update
       - run:
           name: "install"
@@ -35,6 +35,19 @@ commands:
           name: "cachix push"
           command: cachix push free-algebras << parameters.o >>
 jobs:
+  GHC881:
+    <<: *defaults
+    steps:
+      - setup
+      - run:
+          name: "GHC 881"
+          command: |
+            nix-build -A free-category --argstr compiler ghc881 -o result-fc
+            nix-build -A examples      --argstr compiler ghc881 -o result-ex
+      - cachix-push:
+          o: "./result-fc"
+      - cachix-push:
+          o: "./result-ex"
   GHC865:
     <<: *defaults
     steps:
@@ -92,6 +105,7 @@ jobs:
 workflows:
   build:
     jobs:
+      - GHC881
       - GHC865
       - GHC844
       - GHC822
