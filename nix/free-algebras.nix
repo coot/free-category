@@ -1,18 +1,17 @@
-{ mkDerivation, base, constraints, containers, data-fix, dlist
-, free, groups, hedgehog, kan-extensions, mtl, natural-numbers
-, stdenv, transformers
+{ mkDerivation, base, containers, data-fix, dlist, free, groups
+, hedgehog, kan-extensions, mtl, stdenv, transformers
 }:
 mkDerivation {
   pname = "free-algebras";
-  version = "0.0.7.0";
-  sha256 = "f0c18b857087ec7ec0321f729562174c9a9f02172806e2fba7c8989fdd7631aa";
+  version = "0.0.8.0";
+  sha256 = "47eafb41c60ca509de7078f5d283bd88cf7e1ff81ddb49965d67a9e0e9969b43";
   libraryHaskellDepends = [
-    base constraints containers data-fix dlist free groups
-    kan-extensions mtl natural-numbers transformers
+    base containers data-fix dlist free groups kan-extensions mtl
+    transformers
   ];
   testHaskellDepends = [
-    base constraints containers data-fix dlist free groups hedgehog
-    kan-extensions mtl natural-numbers transformers
+    base containers data-fix dlist free groups hedgehog kan-extensions
+    mtl transformers
   ];
   homepage = "https://github.com/coot/free-algebras#readme";
   description = "Free algebras in Haskell";
