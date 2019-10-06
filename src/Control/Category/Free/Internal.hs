@@ -59,7 +59,7 @@ import           Data.Semigroup (Semigroup (..))
 import           Control.Algebra.Free2 ( AlgebraType0
                                        , AlgebraType
                                        , FreeAlgebra2 (..)
-                                       , proof
+                                       , Proof (..)
                                        )
 
 -- | Oposite categoy in which arrows from @a@ to @b@ are represented by arrows
@@ -188,8 +188,8 @@ instance FreeAlgebra2 ListTr where
   foldNatFree2 = foldNatL
   {-# INLINE foldNatFree2 #-}
 
-  codom2  = proof
-  forget2 = proof
+  codom2  = Proof
+  forget2 = Proof
 
 instance Semigroup (ListTr f o o) where
   f <> g = g . f
@@ -453,8 +453,8 @@ instance FreeAlgebra2 Queue where
   foldNatFree2 = foldNatQ
   {-# INLINE foldNatFree2 #-}
 
-  codom2  = proof
-  forget2 = proof
+  codom2  = Proof
+  forget2 = Proof
 
 instance Semigroup (Queue f o o) where
   f <> g = g `composeQ` f
