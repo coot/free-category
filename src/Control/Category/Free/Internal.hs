@@ -29,6 +29,7 @@
 module Control.Category.Free.Internal
   ( Op (..)
   , hoistOp
+
   , ListTr (..)
   , liftL
   , foldNatL
@@ -36,6 +37,7 @@ module Control.Category.Free.Internal
   , foldrL
   , foldlL
   , zipWithL
+
   , Queue (NilQ, ConsQ)
   , liftQ
   , nilQ

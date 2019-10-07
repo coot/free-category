@@ -23,7 +23,7 @@ import qualified Data.List.NonEmpty as NE
 
 import Test.QuickCheck
 
-import Control.Category.Free (Cat)
+import Control.Category.Free (ListTr)
 
 -- Import classes and combintators used in this example
 import Control.Category.FreeEffect
@@ -77,16 +77,16 @@ data Tr a (from :: StateType) (to :: StateType) where
 
 login :: Monad m
       => SStateType st
-      -> EffCat m (Cat (Tr a)) 'LoggedOutType st
+      -> EffCat m (ListTr (Tr a)) 'LoggedOutType st
 login = liftEffect . Login
 
 logout :: Monad m
        => Maybe a
-       -> EffCat m (Cat (Tr a)) 'LoggedInType 'LoggedOutType
+       -> EffCat m (ListTr (Tr a)) 'LoggedInType 'LoggedOutType
 logout = liftEffect . Logout
 
 access :: Monad m
-       => EffCat m (Cat (Tr a)) 'LoggedInType 'LoggedInType
+       => EffCat m (ListTr (Tr a)) 'LoggedInType 'LoggedInType
 access = liftEffect Access
 
 --
@@ -168,7 +168,7 @@ accessSecret
   -- @'HandleLogin'@ (with a small modifications) but this way we are able to
   -- test it with a pure @'HandleLogin'@ (see @'handleLoginPure'@).
   -> HandleLogin m String a
-  -> EffCat m (Cat (Tr a)) 'LoggedOutType 'LoggedOutType
+  -> EffCat m (ListTr (Tr a)) 'LoggedOutType 'LoggedOutType
 accessSecret 0 HandleLogin{handleAccessDenied}
     = effect $ handleAccessDenied $> id
 
@@ -183,7 +183,7 @@ accessSecret n HandleLogin{handleLogin}
        where
         handle :: HandleAccess m a
                -> Maybe a
-               -> EffCat m (Cat (Tr a)) 'LoggedInType 'LoggedOutType
+               -> EffCat m (ListTr (Tr a)) 'LoggedInType 'LoggedOutType
         handle LogoutHandler ma = logout ma
         handle (AccessHandler accessHandler dataHandler) _ = effect $ do
           a <- accessHandler
