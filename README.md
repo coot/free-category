@@ -2,7 +2,8 @@
 [![Maintainer: coot](https://img.shields.io/badge/maintainer-coot-lightgrey.svg)](http://github.com/coot)
 [![CircleCI](https://circleci.com/gh/coot/free-category/tree/master.svg?style=svg)](https://circleci.com/gh/coot/free-category/tree/master)
 
-This package contains efficient free categories. There are a few presentations based on:
+This package contains efficient implementation of free categories. There are
+various resentations available:
 
 * real-time queues (C. Okasaki 'Pure Functional Data Structures')
 * type aligned lists

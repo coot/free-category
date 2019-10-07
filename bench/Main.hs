@@ -66,30 +66,7 @@ setupEnv500 = replicate 500 [1..500]
 main :: IO ()
 main = defaultMain
     [ env (pure setupEnv100) $ \ints -> bgroup "main"
-      [ bgroup "Cat 100" $
-        [ bench "right right" $
-           whnf
-            (\c -> foldNatCat interpret c 0)
-            (fromListR (liftCat . Add) ints)
-        , bench "right left" $
-            whnf
-              (\c -> foldNatCat interpret c 0)
-              (fromListRL (liftCat . Add) ints)
-        , bench "left left" $
-            whnf
-              (\c -> foldNatCat interpret c 0)
-              (fromListL (liftCat . Add) ints)
-        , bench "left right" $
-            whnf
-              (\c -> foldNatCat interpret c 0)
-              (fromListLR (liftCat . Add) ints)
-        , bench "alternate" $
-            whnf
-              (\c -> foldNatCat interpret c 0)
-              (fromListM (liftCat . Add) ints)
-        ]
-
-      , bgroup "Queue 100"
+      [ bgroup "Queue 100"
         [ bench "right right" $
             whnf
               (\c -> foldNatQ interpret c 0)
@@ -159,15 +136,6 @@ main = defaultMain
         ]
       ]
     , env (pure setupEnv250) $ \ints -> bgroup "main"
-      {--
-        - [ bgroup "Cat 250" $
-        -   [ bench "right right" $
-        -      whnf
-        -       (\c -> foldNatCat interpret c 0)
-        -       (fromListR (liftCat . Add) ints)
-        -   ]
-        --}
-
       [ bgroup "Queue 250"
         [ bench "right right" $
             whnf
@@ -192,15 +160,6 @@ main = defaultMain
         --}
       ]
     , env (pure setupEnv500) $ \ints -> bgroup "main"
-      {--
-        - [ bgroup "Cat 500" $
-        -   [ bench "right right" $
-        -      whnf
-        -       (\c -> foldNatCat interpret c 0)
-        -       (fromListR (liftCat . Add) ints)
-        -   ]
-        --}
-
       [ bgroup "Queue 500"
         [ bench "right right" $
             whnf

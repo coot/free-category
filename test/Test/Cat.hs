@@ -36,23 +36,20 @@ import           Test.Tasty.QuickCheck (testProperty)
 tests :: TestTree
 tests =
   testGroup "Control.Category.Free"
-  [ testProperty "Cat"   prop_Cat
+  [ testProperty "Queue" prop_Queue
   , testProperty "C"     prop_C
   , testGroup "Category laws"
-    [ testProperty "Cat id"               prop_id_Cat
-    , testProperty "Cat associativity"    prop_associativity_Cat
+    [ testProperty "ListTr id"            prop_id_ListTr
+    , testProperty "ListTr associativity" prop_associativity_ListTr
+    , testProperty "Queue id"            prop_id_Queue
+    , testProperty "Queue associativity" prop_associativity_Queue
     , testProperty "C id"                 prop_id_C
     , testProperty "C associativity"      prop_associativity_C
-    , testProperty "ListTr id"            prop_id_Queue
-    , testProperty "ListTr associativity" prop_associativity_Queue
-    , testProperty "ListTr id"            prop_id_ListTr
-    , testProperty "ListTr associativity" prop_associativity_ListTr
     ]
   , testGroup "foldFree2 and foldMap"
-    [ testProperty "foldFree Cat"    prop_foldCat
-    , testProperty "foldFree C"      prop_foldC
+    [ testProperty "foldFree ListTr" prop_foldListTr
     , testProperty "foldFree Queue"  prop_foldQueue
-    , testProperty "foldFree ListTr" prop_foldListTr
+    , testProperty "foldFree C"      prop_foldC
     ]
   ]
 
@@ -210,20 +207,20 @@ instance Arbitrary ArbListTr where
 --
 -- test 'Cat' and 'C' treating 'ListTr' as a model to compare to.
 --
-prop_Cat, prop_C
+prop_Queue, prop_C
     :: Blind ArbListTr -> Bool
 
 
-prop_Cat (Blind (ArbListTr listTr SInt _)) =
-      foldNatFree2 interpretTr (hoistFreeH2 @_ @Cat listTr) 0
+prop_Queue (Blind (ArbListTr listTr SInt _)) =
+      foldNatFree2 interpretTr (hoistFreeH2 @_ @Queue listTr) 0
     ==
       foldNatFree2 interpretTr listTr 0
-prop_Cat (Blind (ArbListTr listTr SInteger _)) =
-      foldNatFree2 interpretTr (hoistFreeH2 @_ @Cat listTr) 0
+prop_Queue (Blind (ArbListTr listTr SInteger _)) =
+      foldNatFree2 interpretTr (hoistFreeH2 @_ @Queue listTr) 0
     ==
       foldNatFree2 interpretTr listTr 0
-prop_Cat (Blind (ArbListTr listTr SNatural _)) =
-      foldNatFree2 interpretTr (hoistFreeH2 @_ @Cat listTr) 0
+prop_Queue (Blind (ArbListTr listTr SNatural _)) =
+      foldNatFree2 interpretTr (hoistFreeH2 @_ @Queue listTr) 0
     ==
       foldNatFree2 interpretTr listTr 0
 
@@ -310,35 +307,6 @@ toList c = go (hoistFreeH2 c)
     go :: ListTr IntCat '() '() -> [IntCat '() '()]
     go NilTr = []
     go (ConsTr tr@IntCat{} xs) = tr : go xs
-
-
---
--- 'Cat' cateogry laws
---
-
-newtype ArbIntCat = ArbIntCat (Cat IntCat '() '())
-
-instance Show ArbIntCat where
-    show (ArbIntCat c) = show c
-
-instance Arbitrary ArbIntCat where
-    arbitrary = ArbIntCat . fromList <$> arbitrary
-    shrink (ArbIntCat c) =
-      map (ArbIntCat . fromList)
-          $ shrinkList (const [])
-          $ toList c
-
-prop_id_Cat :: ArbIntCat -> Bool
-prop_id_Cat (ArbIntCat f) =
-    prop_id (on (==) toList) f
-
-prop_associativity_Cat
-    :: ArbIntCat -> ArbIntCat -> ArbIntCat
-    -> Bool
-prop_associativity_Cat (ArbIntCat f0)
-                       (ArbIntCat f1)
-                       (ArbIntCat f2) =
-      prop_associativity (on (==) toList) f0 f1 f2
 
 --
 -- 'C' category laws
@@ -429,18 +397,14 @@ prop_associativity_ListTr (ArbIntListTr f0)
 -- Compatibility between 'foldFree2' and 'foldMap' for 'IntCat'
 --
 
-prop_foldCat :: ArbIntCat -> Bool
-prop_foldCat (ArbIntCat f)
-    = foldFree2 f == foldMap id (toList f)
-
-prop_foldC :: (Blind ArbIntC) -> Bool
-prop_foldC (Blind (ArbIntC f))
+prop_foldListTr :: ArbIntListTr -> Bool
+prop_foldListTr (ArbIntListTr f)
     = foldFree2 f == foldMap id (toList f)
 
 prop_foldQueue :: ArbIntQueue -> Bool
 prop_foldQueue (ArbIntQueue f)
     = foldFree2 f == foldMap id (toList f)
 
-prop_foldListTr :: ArbIntListTr -> Bool
-prop_foldListTr (ArbIntListTr f)
+prop_foldC :: (Blind ArbIntC) -> Bool
+prop_foldC (Blind (ArbIntC f))
     = foldFree2 f == foldMap id (toList f)

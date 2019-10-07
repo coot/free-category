@@ -1,40 +1,5 @@
 ```
 cabal run -O1 bench-cats  
-benchmarking main/Cat 100/right right
-time                 383.4 μs   (370.0 μs .. 412.2 μs)
-                     0.928 R²   (0.846 R² .. 0.996 R²)
-mean                 408.5 μs   (381.2 μs .. 466.5 μs)
-std dev              131.4 μs   (59.97 μs .. 250.7 μs)
-variance introduced by outliers: 98% (severely inflated)
-
-benchmarking main/Cat 100/right left
-time                 665.2 μs   (647.0 μs .. 681.1 μs)
-                     0.996 R²   (0.994 R² .. 0.997 R²)
-mean                 651.8 μs   (643.7 μs .. 660.0 μs)
-std dev              27.99 μs   (23.84 μs .. 32.75 μs)
-variance introduced by outliers: 35% (moderately inflated)
-
-benchmarking main/Cat 100/left left
-time                 682.9 μs   (671.9 μs .. 692.8 μs)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 694.2 μs   (683.5 μs .. 713.7 μs)
-std dev              46.27 μs   (26.75 μs .. 75.32 μs)
-variance introduced by outliers: 56% (severely inflated)
-
-benchmarking main/Cat 100/left right
-time                 682.0 μs   (664.8 μs .. 698.9 μs)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 673.7 μs   (666.1 μs .. 682.2 μs)
-std dev              28.44 μs   (24.53 μs .. 33.41 μs)
-variance introduced by outliers: 34% (moderately inflated)
-
-benchmarking main/Cat 100/alternate
-ktime                 582.0 μs   (576.1 μs .. 587.5 μs)
-                     0.997 R²   (0.995 R² .. 0.999 R²)
-mean                 581.2 μs   (573.0 μs .. 597.4 μs)
-std dev              37.40 μs   (21.44 μs .. 68.12 μs)
-variance introduced by outliers: 56% (severely inflated)
-
 benchmarking main/Queue 100/right right
 time                 344.2 μs   (337.1 μs .. 362.0 μs)
                      0.974 R²   (0.923 R² .. 1.000 R²)
