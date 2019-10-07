@@ -42,8 +42,8 @@ jobs:
       - run:
           name: "GHC 881"
           command: |
-            nix-build -A free-category --argstr compiler ghc881 -o result-fc
-            nix-build -A examples      --argstr compiler ghc881 -o result-ex
+            nix-build release.nix -A free-category --argstr compiler ghc881 -o result-fc
+            nix-build release.nix -A examples      --argstr compiler ghc881 -o result-ex
       - cachix-push:
           o: "./result-fc"
       - cachix-push:
@@ -55,8 +55,8 @@ jobs:
       - run:
           name: "GHC 865"
           command: |
-            nix-build -A free-category -o result-fc --arg benchmarks true --argstr compiler ghc865
-            nix-build -A examples -o result-ex --argstr compiler ghc865
+            nix-build release.nix -A free-category --argstr compiler ghc865 -o result-fc
+            nix-build release.nix -A examples      --argstr compiler ghc865 -o result-ex
       - cachix-push:
           o: result-fc
       - cachix-push:
@@ -68,8 +68,8 @@ jobs:
       - run:
           name: "GHC 844"
           command: |
-            nix-build -A free-category -o result-fc --arg benchmarks true --argstr compiler ghc844
-            nix-build -A examples -o result-ex --argstr compiler ghc844
+            nix-build release.nix -A free-category -o result-fc --argstr compiler ghc844
+            nix-build release.nix -A examples -o result-ex --argstr compiler ghc844
       - cachix-push:
           o: result-fc
       - cachix-push:
@@ -81,8 +81,8 @@ jobs:
       - run:
           name: "GHC 822"
           command: |
-            nix-build -A free-category -o result-fc --arg benchmarks true --argstr compiler ghc822
-            nix-build -A examples -o result-ex --argstr compiler ghc822
+            nix-build release.nix -A free-category -o result-fc --argstr compiler ghc822
+            nix-build release.nix -A examples -o result-ex --argstr compiler ghc822
       - cachix-push:
           o: result-fc
       - cachix-push:
@@ -95,8 +95,8 @@ jobs:
       - run:
           name: "GHC 802"
           command: |
-            nix-build -A free-category -o result-fc --arg benchmarks true --argstr compiler ghc802
-            nix-build -A examples -o result-ex --argstr compiler ghc802
+            nix-build release.nix -A free-category --argstr compiler ghc802 -o result-fc
+            nix-build release.nix -A examples     --argstr compiler ghc802 -o result-ex
       - cachix-push:
           o: result-fc
       - cachix-push:
