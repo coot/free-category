@@ -2,12 +2,12 @@
 [![Maintainer: coot](https://img.shields.io/badge/maintainer-coot-lightgrey.svg)](http://github.com/coot)
 [![CircleCI](https://circleci.com/gh/coot/free-category/tree/master.svg?style=svg)](https://circleci.com/gh/coot/free-category/tree/master)
 
-This package contains efficient implementation of free categories. There are
-various resentations available:
+This package contains efficient implementations of free categories. There are
+various representations available:
 
 * real-time queues (C. Okasaki 'Pure Functional Data Structures')
 * type aligned lists
-* continuation passing style
+* continuation passing style (Church encoding)
 
 Free arrows and free Kleisli categories are also included.
 
@@ -20,13 +20,13 @@ a category with effects.
 
 ## Benchmarks
 
-Check performance characteristics of various presentations free categories:
+Check performance characteristics of various representations:
 
 * [report-O0](/bench/report-O0.md)
 * [report-O1](/bench/report-O1.md)
 * [report-O2](/bench/report-O2.md)
 
-## Some examples
+## Resources
 * [LoginStateMachine](https://github.com/coot/free-category/blob/master/examples/src/LoginStateMachine.hs):
   based on [State Machines All The Way
   Down](https://www.youtube.com/watch?v=xq7ZuSRgCR4) by Edwin Bradly, 2017 You
