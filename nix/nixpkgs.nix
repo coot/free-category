@@ -5,9 +5,8 @@ let
           || compiler == "ghc822"
           || compiler == "ghc844"
     then "722fcbbb80b2142583e9266efe77992f8e32ac4c"
-    else "57b66eb3f2a0e824c48759f2729370b1b9fd7660";
+    else "a2f9bcd1328de9c043d7425e45d06fc05e0b7929";
   url = "https://github.com/NixOS/nixpkgs/archive/${rev}.tar.gz";
-  url802 = "https://github.com/NixOS/nixpkgs/archive/${rev802}.tar.gz";
   config =
     { packageOverrides = super:
       let self = super.pkgs;
