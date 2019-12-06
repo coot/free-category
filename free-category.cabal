@@ -1,7 +1,11 @@
 name:           free-category
 version:        0.0.4.0
-synopsis:       Free category
-description:    Free categories
+synopsis:       Efficient data types for free categories and free arrows.
+description:
+  Provide various free categories / type aligned queues and useful type
+  classes which allows to write abstract categories with side effects (Kleisli
+  like categories).  These are useful for encoding type safe state machines.
+  Also free arrows are provided.
 category:       Algebra, Control, Monads, Category
 homepage:       https://github.com/coot/free-category#readme
 bug-reports:    https://github.com/coot/free-category/issues
