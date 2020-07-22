@@ -1,12 +1,12 @@
-cabal-version:  >= 2.0
+cabal-version:  2.0
 name:           free-category
 version:        0.0.4.2
 synopsis:       efficient data types for free categories and arrows
 description:
-  Provide various data types for free categories / type aligned queues, type
-  classes which allow to write abstract categories with side effects (Kleisli
-  like categories).  These are useful for encoding type safe state machines.
-  Free arrows are also provided.
+  This package provides various data types for free categories, type
+  aligned queues, arrows and type classes which allow to write abstract
+  categories with side effects (Kleisli like categories).  These are useful
+  for encoding type safe state machines.  Free arrows are also provided.
 category:       Algebra, Control, Monads, Category
 homepage:       https://github.com/coot/free-category#readme
 bug-reports:    https://github.com/coot/free-category/issues
@@ -37,11 +37,13 @@ library
       Control.Category.FreeEffect
   other-modules:
       Paths_free_category
+  autogen-modules:
+      Paths_free_category
   hs-source-dirs:
       src
   build-depends:
       base          >= 4.9 && <5
-    , free-algebras >= 0.0.8.0
+    , free-algebras >= 0.0.8.2
   ghc-options:
     -Wall
     -fwarn-incomplete-record-updates

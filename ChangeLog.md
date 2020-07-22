@@ -1,5 +1,8 @@
 # Changelog for free-category
 
+## Version 0.0.4.2
+- updated for *GHC 8.10.1*
+
 ## Version 0.0.4.0
 - hoistOp
 - Renamed `Control.Category.FreeEff` module as `Control.Category.FreeEffect`
