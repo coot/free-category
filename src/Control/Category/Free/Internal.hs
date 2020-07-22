@@ -75,7 +75,8 @@ newtype Op (f :: k -> k -> *) (a :: k) (b :: k) = Op { runOp :: f b a }
 
 -- | 'Op' is an endo-functor of the category of categories.
 --
-hoistOp :: forall (f :: k -> k -> *)
+hoistOp :: forall k
+                  (f :: k -> k -> *)
                   (g :: k -> k -> *)
                   a b.
            (forall x y. f x y -> g x y)
@@ -129,7 +130,7 @@ lengthListTr :: ListTr f a b -> Int
 lengthListTr NilTr = 0
 lengthListTr (ConsTr _ xs) = 1 + lengthListTr xs
 
-composeL :: forall (f :: k -> k -> *) x y z.
+composeL :: forall k (f :: k -> k -> *) x y z.
             ListTr f y z
          -> ListTr f x y
          -> ListTr f x z
@@ -137,12 +138,12 @@ composeL (ConsTr x xs) ys = ConsTr x (xs . ys)
 composeL NilTr         ys = ys
 {-# INLINE [1] composeL #-}
 
-liftL :: forall (f :: k -> k -> *) x y.
+liftL :: forall k (f :: k -> k -> *) x y.
          f x y -> ListTr f x y
 liftL f = ConsTr f NilTr
 {-# INLINE [1] liftL #-}
 
-foldNatL :: forall (f :: k -> k -> *) c a b.
+foldNatL :: forall k (f :: k -> k -> *) c a b.
             Category c
          => (forall x y. f x y -> c x y)
          -> ListTr f a b
@@ -172,7 +173,7 @@ foldNatL fun (ConsTr bc ab) = fun bc . foldNatFree2 fun ab
 
 -- | 'foldr' of a 'ListTr'
 --
-foldrL :: forall (f :: k -> k -> *) c a b d.
+foldrL :: forall k (f :: k -> k -> *) c a b d.
           (forall x y z. f y z -> c x y -> c x z)
        -> c a b
        -> ListTr f b d
@@ -185,7 +186,7 @@ foldrL  nat ab (ConsTr xd bx) = nat xd (foldrL nat ab bx)
 --
 -- TODO: make it strict, like 'foldl''.
 --
-foldlL :: forall (f :: k -> k -> *) c a b d.
+foldlL :: forall k (f :: k -> k -> *) c a b d.
           (forall x y z. c y z -> f x y -> c x z)
        -> c b d
        -> ListTr f a b
@@ -294,7 +295,7 @@ pattern NilQ <- (unconsQ -> EmptyL) where
 {-# complete NilQ, ConsQ #-}
 #endif
 
-composeQ :: forall (f :: k -> k -> *) x y z.
+composeQ :: forall k (f :: k -> k -> *) x y z.
             Queue f y z
          -> Queue f x y
          -> Queue f x z
@@ -306,7 +307,7 @@ nilQ :: Queue (f :: k -> k -> *) a a
 nilQ = Queue NilTr NilTr NilTr
 {-# INLINE [1] nilQ #-}
 
-consQ :: forall (f :: k -> k -> *) a b c.
+consQ :: forall k (f :: k -> k -> *) a b c.
          f b c
       -> Queue f a b
       -> Queue f a c
@@ -326,7 +327,7 @@ unconsQ (Queue (ConsTr tr f) r s) = tr :< exec f r s
 unconsQ _                         = error "Queue.uncons: invariant violation"
 {-# INLINE unconsQ #-}
 
-snocQ :: forall (f :: k -> k -> *) a b c.
+snocQ :: forall k (f :: k -> k -> *) a b c.
          Queue f b c
       -> f a b
       -> Queue f a c
@@ -335,7 +336,7 @@ snocQ (Queue f r s) g = exec f (ConsTr (Op g) r) s
 
 -- | 'foldr' of a 'Queue'
 --
-foldrQ :: forall (f :: k -> k -> *) c a b d.
+foldrQ :: forall k (f :: k -> k -> *) c a b d.
           (forall x y z. f y z -> c x y -> c x z)
        -> c a b
        -> Queue f b d
@@ -367,7 +368,7 @@ foldrQ  nat ab (ConsQ xd bx) = nat xd (foldrQ nat ab bx)
 
 #-}
 
-liftQ :: forall (f :: k -> k -> *) a b.
+liftQ :: forall k (f :: k -> k -> *) a b.
          f a b -> Queue f a b
 liftQ = \fab -> ConsQ fab NilQ
 {-# INLINE [1] liftQ #-}
@@ -376,7 +377,7 @@ liftQ = \fab -> ConsQ fab NilQ
 --
 -- /complexity/ @O\(n\)@
 --
-foldNatQ :: forall (f :: k -> k -> *) c a b.
+foldNatQ :: forall k (f :: k -> k -> *) c a b.
             Category c
          => (forall x y. f x y -> c x y)
          -> Queue f a b
@@ -407,7 +408,7 @@ foldNatQ nat = foldrQ (\f c -> nat f . c) id
 --
 -- TODO: make it strict, like 'foldl''.
 --
-foldlQ :: forall (f :: k -> k -> *) c a b d.
+foldlQ :: forall k (f :: k -> k -> *) c a b d.
           (forall x y z. c y z -> f x y -> c x z)
        -> c b d
        -> Queue f a b
@@ -433,7 +434,8 @@ zipWithQ fn queueA queueB = case (queueA, queueB) of
 -- categories), thus one can hoist the transitions using a natural
 -- transformation.  This in analogy to @'map' :: (a -> b) -> [a] -> [b]@.
 --
-hoistQ :: forall (f :: k -> k -> *)
+hoistQ :: forall k
+                 (f :: k -> k -> *)
                  (g :: k -> k -> *)
                  a  b.
           (forall x y. f x y -> g x y)

@@ -1,3 +1,10 @@
 index-state: 2020-05-15T00:00:00Z
 packages: free-category.cabal
 	  examples/examples.cabal
+
+-- free-algebras-0.0.8.2 with ghc-8.10.1 support
+source-repository-package
+  type: git
+  location: https://github.com/coot/free-algebras
+  tag: 5a60cb63ff3e4aab44a2e270dd31d736abd9b0f5
+  --sha256: 0iim1s19rd75v4kax5fnzway35bjykh55vr8qicc16n316700zhz
