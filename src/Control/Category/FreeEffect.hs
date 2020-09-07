@@ -73,8 +73,8 @@ liftEffect :: ( Monad m
            => tr a b -> EffCat m (cat tr) a b
 liftEffect = liftFree2 . liftFree2
 
--- | Fold @'FreeLifing'@ category based on a free category @'cat' tr@ (e.g.
--- @'Cat' tr@) using a functor @tr x y -> c x y@.
+-- | Fold @'FreeLifting'@ category based on a free category @'cat' tr@ (e.g.
+-- @'C' tr@) using a functor @tr x y -> c x y@.
 --
 foldNatEffCat
   :: ( Monad m
@@ -89,7 +89,7 @@ foldNatEffCat
   -> c a b
 foldNatEffCat nat = foldNatFree2 (foldNatFree2 nat)
 
--- |  Functor from @(->)@ category to @'Kleisli' m@.  If @m@ is 'Identity' then
+-- | Functor from @(->)@ category to @'Kleisli' m@.  If @m@ is 'Identity' then
 -- it will respect 'effect' i.e.
 -- @'liftKleisli' ('effect' ar) = 'effect' ('liftKleisli' \<$\> ar)@.
 --
