@@ -20,7 +20,7 @@ module Control.Arrow.Free
   , A (..)
   , fromA
   , toA
-    -- * Free interface re-exports 
+    -- * Free interface re-exports
   , FreeAlgebra2 (..)
   , wrapFree2
   , foldFree2
@@ -116,7 +116,7 @@ instance FreeAlgebra2 Arr where
 -- Free arrows using CSP style
 --
 
--- | Free arrow using CPS sytle.
+-- | Free arrow using CPS style.
 --
 newtype A f a b
   = A { runA :: forall r. Arrow r
