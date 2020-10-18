@@ -288,7 +288,7 @@ instance Monoid (IntCat '() '()) where
 instance Arbitrary (IntCat '() '()) where
     arbitrary = IntCat <$> arbitrary
 
-fromList :: forall (a :: k) m f.
+fromList :: forall k (a :: k) m f.
             ( FreeAlgebra2 m
             , AlgebraType0 m f
             , Category    (m f)
