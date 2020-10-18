@@ -11,7 +11,7 @@ jobs:
       - name: "cachix"
         uses: cachix/cachix-action@v6
         with:
-          name: "free-category"
+          name: "free-algebras"
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
 
       - name: "nix"
