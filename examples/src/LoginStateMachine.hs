@@ -30,7 +30,7 @@ import Control.Category.FreeEffect
 
 {-------------------------------------------------------------------------------
 -- Example State Machine, inspired by:
--- `State Machines All The Way Down` by Edwin Bradly, 2017
+-- `State Machines All The Way Down` by Edwin Brady, 2017
 -- https://www.youtube.com/watch?v=xq7ZuSRgCR4
 -------------------------------------------------------------------------------}
 
@@ -60,7 +60,7 @@ runLoggedOut (LoggedOut a) = a
 -- | Graph of transitions in the state machine.  In abstract representation the
 -- states do not show up, the only way to record some data is to add it to the
 -- transition.  Thus @'Logout'@ can carry data.  When interpreted in some
--- category (e.g. @'Kleisli' m@) then the data will be avalable on
+-- category (e.g. @'Kleisli' m@) then the data will be available on
 -- @'LoggedOut{} :: 'State' a st@.
 --
 data Tr a (from :: StateType) (to :: StateType) where
@@ -229,7 +229,7 @@ getData nat n handleLogin = case foldNatEffCat nat (accessSecret n handleLogin) 
 -- @'Monad' m@.  Note, that even though @'Kleisli'@ category seems redundant
 -- here, as we don't use the monad in the transformation, we need
 -- a transformation into a category that satisfies the @'Lifing'@ constraint.
--- This is because we will need the monad whn @'foldNatLift'@ will walk over the
+-- This is because we will need the monad when @'foldNatLift'@ will walk over the
 -- constructors of the '@FreeLifting'@ category.
 --
 natPure :: forall m a from to.
