@@ -1,7 +1,7 @@
 Example State Machine using 'EffCat'
 
 The example state machine is inspired by
-`State Machines All The Way Down` by Edwin Bradly, 2017
+`State Machines All The Way Down` by Edwin Brady, 2017
 https://www.youtube.com/watch?v=xq7ZuSRgCR4
 
 It allows to login, access a secret token and logout. 
