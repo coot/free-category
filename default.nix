@@ -1,4 +1,4 @@
-{ compiler ? "ghc865"
+{ compiler ? "ghc8102"
 }:
 let compiler-nix-name = compiler;
 
@@ -17,7 +17,7 @@ let compiler-nix-name = compiler;
 
     # 'cleanGit' cleans a source directory based on the files known by git
     src = haskell-nix.haskellLib.cleanGit {
-      name = "free-algebras";
+      name = "free-category";
       src = ./.;
     };
 
