@@ -59,10 +59,15 @@ instance Arbitrary (Queue Tr 'K 'K) where
 
 
 prop_unconsQ :: Queue Tr 'K 'K -> Bool
-prop_unconsQ q = case (q, toList q) of
-    (ConsQ a@A{} _, a' : _) -> a == a'
-    (NilQ, []) -> True
-    _          -> False
+prop_unconsQ q =
+    case q of
+      ConsQ a@A{} _ ->
+        case as of
+          a' : _ -> a == a'
+          []     -> False
+      NilQ -> null as
+  where
+    as = toList q
 
 
 prop_consQ :: Tr 'K 'K -> Queue Tr 'K 'K -> Bool
