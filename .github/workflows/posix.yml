@@ -1,4 +1,4 @@
-name: "POSIX"
+name: "Haskell/CI"
 on: [push]
 
 jobs:
