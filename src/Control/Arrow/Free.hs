@@ -13,6 +13,7 @@ module Control.Arrow.Free
   ( -- * Free arrow
     Arr (Id, Arr, Prod)
   , arrArr
+  , liftArr
   , mapArr
   , foldArr
 
@@ -27,10 +28,14 @@ module Control.Arrow.Free
   , hoistFree2
   , joinFree2
   , bindFree2
+    -- * Free 'ArrowChoice'
+  , Choice (..)
+  , liftArrChoice
+  , foldArrChoice
   ) where
 
 import           Prelude hiding (id, (.))
-import           Control.Arrow (Arrow (..))
+import           Control.Arrow (Arrow (..), ArrowChoice (..), (>>>))
 import           Control.Category (Category (..))
 #if __GLASGOW_HASKELL__ < 804
 import           Data.Monoid (Monoid (..))
@@ -59,6 +64,10 @@ data Arr f a b where
 
 arrArr :: (b -> c) -> Arr f b c
 arrArr bc = Arr bc Id
+
+liftArr :: f a b
+        -> Arr f a b
+liftArr f = Cons f nilQ
 
 mapArr :: f b c
        -> Arr f a b
@@ -168,3 +177,31 @@ instance FreeAlgebra2 A where
 
   codom2  = Proof
   forget2 = Proof
+
+data Choice f a b where
+  NoChoice :: f a b
+           -> Choice f a b
+
+  Choose   :: ArrChoice f a c
+           -> ArrChoice f b c
+           -> Choice f (Either a b) c
+
+type ArrChoice f a b = Arr (Choice f) a b
+
+instance ArrowChoice (Arr (Choice f)) where
+  f +++ g = liftArr $ Choose (f >>> arr Left) (g >>> arr Right)
+
+liftArrChoice :: f a b
+              -> ArrChoice f a b
+liftArrChoice = liftArr . NoChoice
+
+foldArrChoice :: forall f arr a b.
+                 ArrowChoice arr
+              => (forall x y. f x y -> arr x y)
+              -> ArrChoice f a b
+              -> arr a b
+foldArrChoice fun = foldArr fun'
+  where
+    fun' :: Choice f x y -> arr x y
+    fun' (NoChoice f) = fun f
+    fun' (Choose f g) = foldArrChoice fun f ||| foldArrChoice fun g
