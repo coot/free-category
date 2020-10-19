@@ -12,6 +12,7 @@ module Control.Category.FreeEffect
   , EffCat (..)
   , liftEffect
   , foldNatEffCat
+  , runEffCat
   , liftKleisli
   ) where
 
@@ -88,6 +89,15 @@ foldNatEffCat
   -> EffCat m (cat tr) a b
   -> c a b
 foldNatEffCat nat = foldNatFree2 (foldNatFree2 nat)
+
+-- | Join all effects in a free effectful category 'EffCat'.
+--
+runEffCat
+  :: Monad m
+  => EffCat m c a b
+  -> m (c a b)
+runEffCat (Base f) = return f
+runEffCat (Effect mf) = runEffCat =<< mf
 
 -- | Functor from @(->)@ category to @'Kleisli' m@.  If @m@ is 'Identity' then
 -- it will respect 'effect' i.e.
