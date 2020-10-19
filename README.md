@@ -14,7 +14,7 @@ Free arrows and free Kleisli categories are also included.
 Free categories are useful to model state machines in a simple yet type safe
 manner.  For that purpose `Kleisli` categories are a very useful target which
 allows to include monadic computations.  This package contains a useful
-generalisation of `Kliesli` categories captured by `EffectCategory` class
+generalisation of `Kleisli` categories captured by `EffectCategory` class
 (categories with effects), and a (free) transformer which lifts a category to
 a category with effects.
 
@@ -29,8 +29,8 @@ Check performance characteristics of various representations:
 ## Resources
 * [LoginStateMachine](https://github.com/coot/free-category/blob/master/examples/src/LoginStateMachine.hs):
   based on [State Machines All The Way
-  Down](https://www.youtube.com/watch?v=xq7ZuSRgCR4) by Edwin Bradly, 2017 You
-  can run it with `cabal new-run examples:login-state-machine`.
+  Down](https://www.youtube.com/watch?v=xq7ZuSRgCR4) by Edwin Bradly, 2017.
+  You can run it with `cabal new-run examples:login-state-machine`.
 * Read more [here](https://coot.me/posts/finite-state-machines.html) on
   a simple example of a finite state machine encoded using a free category
   using a simple GADT.
