@@ -1,6 +1,6 @@
 # Free Category
 [![Maintainer: coot](https://img.shields.io/badge/maintainer-coot-lightgrey.svg)](http://github.com/coot)
-[![CircleCI](https://circleci.com/gh/coot/free-category/tree/master.svg?style=svg)](https://circleci.com/gh/coot/free-category/tree/master)
+[![Haskell/CI](https://github.com/coot/free-category/workflows/Haskell/CI/badge.svg)](https://github.com/coot/free-category/actions)
 
 This package contains efficient implementations of free categories. There are
 various representations available:
