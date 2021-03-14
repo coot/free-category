@@ -28,5 +28,5 @@ jobs:
       - name: "[GHC 8.8.4]  free-category"
         run: nix-build default.nix --argstr compiler ghc884 -A free-category
 
-      - name: "[GHC 8.10.2] free-category"
-        run: nix-build default.nix --argstr compiler ghc8102 -A free-category
+      - name: "[GHC 8.10.4] free-category"
+        run: nix-build default.nix --argstr compiler ghc8104 -A free-category
