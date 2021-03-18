@@ -21,6 +21,7 @@ import Prelude hiding (id, (.))
 import Control.Arrow (Kleisli (..))
 import Control.Category (Category (..))
 import Data.Functor.Identity (Identity (..))
+import Data.Kind (Type)
 
 import Control.Algebra.Free2 (FreeAlgebra2 (..))
 import Data.Algebra.Free (AlgebraType, AlgebraType0, Proof (..))
@@ -40,7 +41,7 @@ instance EffectCategory (->) Identity where
 -- | Category transformer, which adds @'EffectCategory'@ instance to the
 -- underlying base category.
 --
-data EffCat :: (* -> *) -> (k -> k -> *) -> k -> k -> * where
+data EffCat :: (Type -> Type) -> (k -> k -> Type) -> k -> k -> Type where
   Base   :: c a b -> EffCat m c a b
   Effect :: m (EffCat m c a b) -> EffCat m c a b
 

@@ -87,6 +87,7 @@ import           Control.Arrow (Arrow (..), ArrowZero (..), ArrowChoice (..))
 import           Data.Monoid (Monoid (..))
 import           Data.Semigroup (Semigroup (..))
 #endif
+import           Data.Kind (Type)
 
 import           Control.Category.Free.Internal
 
@@ -127,20 +128,20 @@ fromC :: C f a b -> ListTr f a b
 fromC = hoistFreeH2
 {-# INLINE fromC #-}
 
-liftC :: forall k (f :: k -> k -> *) a b.
+liftC :: forall k (f :: k -> k -> Type) a b.
          f a b
       -> C f a b
 liftC = \f -> C $ \k -> k f
 {-# INLINE [1] liftC #-}
 
-consC :: forall k (f :: k -> k -> *) a b c.
+consC :: forall k (f :: k -> k -> Type) a b c.
          f b c
       -> C f a b
       -> C f a c
 consC bc ab = liftC bc `composeC` ab
 {-# INLINE [1] consC #-}
 
-foldNatC :: forall k (f :: k -> k -> *) c a b.
+foldNatC :: forall k (f :: k -> k -> Type) c a b.
             Category c
          => (forall x y. f x y -> c x y)
          -> C f a b
@@ -165,7 +166,7 @@ foldNatC nat (C f) = f nat
 #-}
 
 instance Category (C f) where
-  id  = C (const id)
+  id  = C (\_ -> id)
   (.) = composeC
 
 #if __GLASGOW_HASKELL__ >= 806
