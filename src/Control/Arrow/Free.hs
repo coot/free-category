@@ -138,7 +138,7 @@ fromA = hoistFreeH2
 {-# INLINE fromA #-}
 
 instance Category (A f) where
-  id = A (const id)
+  id = A (\_ -> id)
   A f . A g = A $ \k -> f k . g k
 
 instance Semigroup (A f o o) where
@@ -151,7 +151,7 @@ instance Monoid (A f o o) where
 #endif
 
 instance Arrow (A f) where
-  arr f = A (const (arr f))
+  arr f = A (\_ -> (arr f))
   A f *** A g  = A $ \k -> f k *** g k
   first  (A f) = A $ \k -> first (f k)
   second (A f) = A $ \k -> second (f k)
