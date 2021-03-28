@@ -1,5 +1,9 @@
 # Changelog for free-category
 
+## Version 0.0.4.3
+- updated for GHC 9.0.1
+- added Control.Category.FreeEffect.runEffCat (thanks to Manuel Bärenz)
+
 ## Version 0.0.4.2
 - updated for *GHC 8.10.1*
 
