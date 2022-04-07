@@ -37,7 +37,7 @@ module Control.Category.Free
     , foldlQ
     , zipWithQ
 
-      -- * Type alligned list
+      -- * Type aligned list
     , ListTr (..)
     , liftL
     , foldNatL
