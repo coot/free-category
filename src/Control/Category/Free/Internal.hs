@@ -268,7 +268,7 @@ instance ArrowChoice f => ArrowChoice (ListTr f) where
 --
 
 
--- | Type alligned real time queues; Based on `Purely Functinal Data Structures`
+-- | Type aligned real time queues; Based on `Purely Functinal Data Structures`
 -- C.Okasaki.  This the most reliably behaved implementation of free categories
 -- in this package.
 --
