@@ -1,6 +1,9 @@
 {-# LANGUAGE CPP                   #-}
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleInstances     #-}
+#if __GLASGOW_HASKELL__ >= 902
+{-# LANGUAGE FlexibleContexts      #-}
+#endif
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE KindSignatures        #-}
 {-# LANGUAGE PolyKinds             #-}
@@ -8,9 +11,7 @@
 {-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TupleSections         #-}
 {-# LANGUAGE UndecidableInstances  #-}
-#if __GLASGOW_HASKELL__ >= 806
 {-# LANGUAGE QuantifiedConstraints #-}
-#endif
 
 {-# OPTIONS_GHC -Wno-orphans #-}
 
@@ -19,10 +20,6 @@ module Test.Cat (tests) where
 import           Prelude hiding ((.), id)
 import           Control.Category
 import           Data.Function (on)
-#if __GLASGOW_HASKELL__ < 804
-import           Data.Monoid (Monoid (..))
-import           Data.Semigroup (Semigroup (..))
-#endif
 import           Text.Show.Functions ()
 import           Numeric.Natural (Natural)
 
@@ -173,7 +170,6 @@ genNextTr b = do
 data ArbListTr where
     ArbListTr :: Eq b => ListTr Tr a b -> Sing a -> Sing b -> ArbListTr
 
-#if __GLASGOW_HASKELL__ >= 806
 instance (forall x y. Show (Tr x y)) => Show ArbListTr where
     show (ArbListTr listTr a b) =
          "ArbListTr "
@@ -182,14 +178,6 @@ instance (forall x y. Show (Tr x y)) => Show ArbListTr where
       ++ show b
       ++ " "
       ++ show listTr
-#else
-instance Show ArbListTr where
-    show (ArbListTr _listTr a b) =
-         "ArbListTr "
-      ++ show a
-      ++ " -> "
-      ++ show b
-#endif
 
 instance Arbitrary ArbListTr where
     arbitrary = sized $ \n -> do
@@ -281,9 +269,6 @@ instance Semigroup (IntCat '() '()) where
 
 instance Monoid (IntCat '() '()) where
     mempty = IntCat 0
-#if __GLASGOW_HASKELL__ < 804
-    mappend = (<>)
-#endif
 
 instance Arbitrary (IntCat '() '()) where
     arbitrary = IntCat <$> arbitrary

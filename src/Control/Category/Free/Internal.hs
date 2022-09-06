@@ -6,22 +6,11 @@
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE ViewPatterns          #-}
-
-#if __GLASGOW_HASKELL__ >= 806
 {-# LANGUAGE QuantifiedConstraints #-}
-#endif
 
 {-# OPTIONS_HADDOCK show-extensions #-}
-
-#if __GLASGOW_HASKELL__ <= 802
--- ghc802 does not infer that 'consQ' is used when using a bidirectional
--- pattern
-{-# OPTIONS_GHC -Wno-unused-top-binds    #-}
--- the 'complete' pragma was introduced in ghc804
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
-#endif
-
 
 -- | Internal module, contains implementation of type aligned real time queues
 -- (C.Okasaki 'Purely Functional Data Structures').
@@ -56,10 +45,6 @@ module Control.Category.Free.Internal
 import           Prelude hiding (id, (.))
 import           Control.Arrow
 import           Control.Category (Category (..))
-#if __GLASGOW_HASKELL__ < 804
-import           Data.Monoid (Monoid (..))
-import           Data.Semigroup (Semigroup (..))
-#endif
 import           Data.Kind (Type)
 
 import           Control.Algebra.Free2 ( AlgebraType0
@@ -95,9 +80,6 @@ instance Category f => Semigroup (Op f o o) where
 
 instance Category f => Monoid (Op f o o) where
     mempty = id
-#if __GLASGOW_HASKELL__ < 804
-    mappend = (<>)
-#endif
 
 
 --
@@ -208,15 +190,9 @@ zipWithL fn queueA queueB = case (queueA, queueB) of
     (ConsTr trA' queueA', ConsTr trB' queueB')
                                  -> ConsTr (trA' `fn` trB') (zipWithL fn queueA' queueB')
 
-#if __GLASGOW_HASKELL__ >= 806
 instance (forall (x :: k) (y :: k). Show (f x y)) => Show (ListTr f a b) where
     show NilTr         = "NilTr"
     show (ConsTr x xs) = "ConsTr " ++ show x ++ " " ++ show xs
-#else
-instance Show (ListTr f a b) where
-    show NilTr         = "NilTr"
-    show (ConsTr _ xs) = "ConsTr _ " ++ show xs
-#endif
 
 instance Category (ListTr f) where
   id  = NilTr
@@ -239,9 +215,6 @@ instance Semigroup (ListTr f o o) where
 
 instance Monoid (ListTr f o o) where
   mempty = NilTr
-#if __GLASGOW_HASKELL__ < 804
-  mappend = (<>)
-#endif
 
 instance Arrow f => Arrow (ListTr f) where
   arr ab                          = arr ab `ConsTr` NilTr
@@ -292,9 +265,7 @@ pattern NilQ :: () => a ~ b => Queue f a b
 pattern NilQ <- (unconsQ -> EmptyL) where
     NilQ = nilQ
 
-#if __GLASGOW_HASKELL__ > 802
 {-# complete NilQ, ConsQ #-}
-#endif
 
 composeQ :: forall k (f :: k -> k -> Type) x y z.
             Queue f y z
@@ -463,7 +434,6 @@ hoistQ nat q = case q of
 
 #-}
 
-#if __GLASGOW_HASKELL__ >= 806
 instance (forall (x :: k) (y :: k). Show (f x y))
       => Show (Queue f a b) where
     show (Queue f r s) =
@@ -473,16 +443,6 @@ instance (forall (x :: k) (y :: k). Show (f x y))
         ++ show r
         ++ ") "
         ++ show (lengthListTr s)
-#else
-instance Show (Queue f r s) where
-    show (Queue f r s) =
-        "Queue "
-      ++ show (lengthListTr f)
-      ++ " "
-      ++ show (lengthListTr r)
-      ++ " "
-      ++ show (lengthListTr s)
-#endif
 
 instance Category (Queue f) where
     id  = NilQ

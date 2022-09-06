@@ -37,10 +37,6 @@ module Control.Arrow.Free
 import           Prelude hiding (id, (.))
 import           Control.Arrow (Arrow (..), ArrowChoice (..), (>>>))
 import           Control.Category (Category (..))
-#if __GLASGOW_HASKELL__ < 804
-import           Data.Monoid (Monoid (..))
-import           Data.Semigroup (Semigroup (..))
-#endif
 
 import           Control.Algebra.Free2
   ( AlgebraType0
@@ -97,9 +93,6 @@ instance Semigroup (Arr f o o) where
 
 instance Monoid (Arr f o o) where
     mempty = Id
-#if __GLASGOW_HASKELL__ < 804
-    mappend = (<>)
-#endif
 
 instance Arrow (Arr f) where
   arr       = arrArr
@@ -155,9 +148,6 @@ instance Semigroup (A f o o) where
 
 instance Monoid (A f o o) where
     mempty = id
-#if __GLASGOW_HASKELL__ < 804
-    mappend = (<>)
-#endif
 
 instance Arrow (A f) where
   arr f = A (\_ -> (arr f))
