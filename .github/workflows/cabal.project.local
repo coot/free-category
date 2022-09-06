@@ -1,0 +1,6 @@
+documentation: True
+tests: True
+benchmarks: True
+
+package free-category
+  ghc-options: -j2 -Werror

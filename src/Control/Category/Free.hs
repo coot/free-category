@@ -11,19 +11,9 @@
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE ViewPatterns          #-}
-#if __GLASGOW_HASKELL__ >= 806
 {-# LANGUAGE QuantifiedConstraints #-}
-#endif
 
 {-# OPTIONS_HADDOCK show-extensions #-}
-
-#if __GLASGOW_HASKELL__ <= 802
--- ghc802 does not infer that 'cons' is used when using a bidirectional
--- pattern
-{-# OPTIONS_GHC -Wno-unused-top-binds    #-}
--- the 'complete' pragma was introduced in ghc804
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
-#endif
 
 module Control.Category.Free
     ( -- * Real time Queue
@@ -83,10 +73,6 @@ import           Control.Algebra.Free2
                   , bindFree2
                   )
 import           Control.Arrow (Arrow (..), ArrowZero (..), ArrowChoice (..))
-#if __GLASGOW_HASKELL__ < 804
-import           Data.Monoid (Monoid (..))
-import           Data.Semigroup (Semigroup (..))
-#endif
 import           Data.Kind (Type)
 
 import           Control.Category.Free.Internal
@@ -169,17 +155,10 @@ instance Category (C f) where
   id  = C (\_ -> id)
   (.) = composeC
 
-#if __GLASGOW_HASKELL__ >= 806
 -- | Show instance via 'ListTr'
 --
 instance (forall x y. Show (f x y)) => Show (C f a b) where
     show c = show (hoistFreeH2 c :: ListTr f a b)
-#else
--- | Blind show instance via 'ListTr'
---
-instance Show (C f a b) where
-    show c = show (hoistFreeH2 c :: ListTr f a b)
-#endif
 
 type instance AlgebraType0 C f = ()
 type instance AlgebraType  C c = Category c
@@ -212,6 +191,3 @@ instance Semigroup (C f o o) where
 
 instance Monoid (C f o o) where
   mempty = id
-#if __GLASGOW_HASKELL__ < 804
-  mappend = (<>)
-#endif
