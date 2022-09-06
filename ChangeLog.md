@@ -1,5 +1,10 @@
 # Changelog for free-category
 
+## Version 0.0.4.4
+- Added support for GHC: `9.0`, `9.2`, `9.4`.
+- Dropped support for `GHC-8.6` or earlier.
+- Added ArrChoice a free ArrowChoice.
+
 ## Version 0.0.4.2
 - updated for *GHC 8.10.1*
 
