@@ -53,7 +53,7 @@ import           Control.Algebra.Free2 ( AlgebraType0
                                        , Proof (..)
                                        )
 
--- | Oposite categoy in which arrows from @a@ to @b@ are represented by arrows
+-- | Opposite category in which arrows from @a@ to @b@ are represented by arrows
 -- from @b@ to @a@ in the original category.
 --
 newtype Op (f :: k -> k -> Type) (a :: k) (b :: k) = Op { runOp :: f b a }
@@ -241,7 +241,7 @@ instance ArrowChoice f => ArrowChoice (ListTr f) where
 --
 
 
--- | Type aligned real time queues; Based on `Purely Functinal Data Structures`
+-- | Type aligned real time queues; Based on `Purely Functional Data Structures`
 -- C.Okasaki.  This the most reliably behaved implementation of free categories
 -- in this package.
 --
