@@ -27,7 +27,7 @@ import Control.Algebra.Free2 (FreeAlgebra2 (..))
 import Data.Algebra.Free (AlgebraType, AlgebraType0, Proof (..))
 
 
--- | Categories which can lift monadic actions, i.e. effectful categories.
+-- | Categories which can lift monadic actions, i.e effectful categories.
 --
 class Category c => EffectCategory c m | c -> m where
   effect :: m (c a b) -> c a b

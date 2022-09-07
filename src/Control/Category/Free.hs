@@ -82,8 +82,7 @@ import           Control.Category.Free.Internal
 -- CPS style free categories
 --
 
--- |
--- CPS style encoded free category; one can use @'FreeAlgebra2'@ class
+-- | CPS style encoded free category; one can use @'FreeAlgebra2'@ class
 -- instance:
 --
 -- > liftFree2    @C :: f a b -> C f a b
@@ -101,15 +100,15 @@ composeC :: C f y z -> C f x y -> C f x z
 composeC (C g) (C f) = C $ \k -> g k . f k
 {-# INLINE [1] composeC #-}
 
--- |
--- Isomorphism from @'ListTr'@ to @'C'@, which is a specialisation of
+-- | Isomorphism from @'ListTr'@ to @'C'@, which is a specialisation of
 -- @'hoistFreeH2'@.
+--
 toC :: ListTr f a b -> C f a b
 toC = hoistFreeH2
 {-# INLINE toC #-}
 
--- |
--- Inverse of @'fromC'@, which also is a specialisation of @'hoistFreeH2'@.
+-- | Inverse of @'fromC'@, which also is a specialisation of @'hoistFreeH2'@.
+--
 fromC :: C f a b -> ListTr f a b
 fromC = hoistFreeH2
 {-# INLINE fromC #-}

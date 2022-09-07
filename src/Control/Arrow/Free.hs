@@ -126,15 +126,15 @@ newtype A f a b
              -> r a b
       }
 
--- |
--- Isomorphism from @'Arr'@ to @'A'@, which is a specialisation of
+-- | Isomorphism from @'Arr'@ to @'A'@, which is a specialisation of
 -- @'hoistFreeH2'@.
+--
 toA :: Arr f a b -> A f a b
 toA = hoistFreeH2
 {-# INLINE toA #-}
 
--- |
--- Inverse of @'fromA'@, which also is a specialisatin of @'hoistFreeH2'@.
+-- | Inverse of @'fromA'@, which also is a specialisation of @'hoistFreeH2'@.
+--
 fromA :: A f a b -> Arr f a b
 fromA = hoistFreeH2
 {-# INLINE fromA #-}
