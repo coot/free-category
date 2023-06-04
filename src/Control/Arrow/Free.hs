@@ -11,7 +11,7 @@
 
 module Control.Arrow.Free
   ( -- * Free arrow
-    Arr (Id, Arr, Prod)
+    Arr (..)
   , arrArr
   , liftArr
   , mapArr
