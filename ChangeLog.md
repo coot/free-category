@@ -1,5 +1,9 @@
 # Changelog for free-category
 
+## Version 0.0.4.5
+- Support `GHC-9.6`.
+- Export `Arr` all constructors.
+
 ## Version 0.0.4.4
 - Added support for GHC: `9.0`, `9.2`, `9.4`.
 - Dropped support for `GHC-8.6` or earlier.
