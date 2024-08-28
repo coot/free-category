@@ -20,7 +20,7 @@ jobs:
 
     steps:
     - name: Install Haskell
-      uses: haskell/actions/setup@v1
+      uses: haskell-actions/setup@v2
       id: setup-haskell
       with:
         ghc-version: ${{ matrix.ghc }}
@@ -47,7 +47,7 @@ jobs:
         echo "TMPDIR=$RUNNER_TEMP"  >> $GITHUB_ENV
         echo "TMP=$RUNNER_TEMP"     >> $GITHUB_ENV
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Record dependencies
       id: record-deps
@@ -56,14 +56,14 @@ jobs:
         cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[].id' | sort | uniq > dependencies.txt
 
     - name: Cache `cabal store`
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ${{ steps.setup-haskell.outputs.cabal-store }}
         key: cabal-store-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('dependencies.txt') }}
         restore-keys: cabal-store-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ matrix.ghc }}
 
     - name: Cache `dist-newstyle`
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           dist-newstyle
