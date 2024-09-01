@@ -12,7 +12,7 @@ homepage:       https://github.com/coot/free-category#readme
 bug-reports:    https://github.com/coot/free-category/issues
 author:         Marcin Szamotulski
 maintainer:     coot@coot.me
-copyright:      (c) 2018-2022 Marcin Szamotulski
+copyright:      (c) 2018-2024 Marcin Szamotulski
 license:        MPL-2.0
 license-file:   LICENSE
 build-type:     Simple
@@ -43,7 +43,7 @@ library
       src
   build-depends:
       base           >= 4.9 && < 5.0
-    , free-algebras ^>= 0.1.1.0
+    , free-algebras ^>= 0.1.1.0 || ^>= 0.1.2
   ghc-options:
     -Wall
     -fwarn-incomplete-record-updates
