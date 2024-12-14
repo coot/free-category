@@ -44,6 +44,7 @@ library
   build-depends:
       base           >= 4.9 && < 5.0
     , free-algebras ^>= 0.1.1.0 || ^>= 0.1.2
+    , profunctors   ^>= 5.6
   ghc-options:
     -Wall
     -fwarn-incomplete-record-updates
