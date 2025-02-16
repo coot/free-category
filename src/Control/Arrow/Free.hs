@@ -37,7 +37,7 @@ module Control.Arrow.Free
 import           Prelude hiding (id, (.))
 import           Control.Arrow (Arrow (..), ArrowChoice (..), (>>>))
 import           Control.Category (Category (..))
-import           Data.Profunctor
+import           Data.Profunctor (Profunctor (..))
 
 import           Control.Algebra.Free2
   ( AlgebraType0
