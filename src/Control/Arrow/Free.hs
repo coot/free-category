@@ -163,9 +163,9 @@ instance Arrow (A f) where
   second (A f) = A $ \k -> second (f k)
 
 instance Profunctor (A f) where
-  lmap = (^>>)
+  lmap f (A g) = A (\k -> g k . arr f)
   {-# INLINE lmap #-}
-  rmap = (^<<)
+  rmap f (A g) = A (\k -> arr f . g k)
   {-# INLINE rmap #-}
 
 type instance AlgebraType0 A f = ()
