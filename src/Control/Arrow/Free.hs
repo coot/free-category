@@ -35,7 +35,7 @@ module Control.Arrow.Free
   ) where
 
 import           Prelude hiding (id, (.))
-import           Control.Arrow (Arrow (..), ArrowChoice (..), (>>>))
+import           Control.Arrow (Arrow (..), ArrowChoice (..), (>>>), (^>>), (^<<))
 import           Control.Category (Category (..))
 import           Data.Profunctor (Profunctor (..))
 
@@ -103,8 +103,10 @@ instance Arrow (Arr f) where
   (&&&)     = Prod
 
 instance Profunctor (Arr f) where
-  lmap f a = arr f >>> a
+  lmap = (^>>)
+  {-# INLINE lmap #-}
   rmap = Arr
+  {-# INLINE rmap #-}
 
 type instance AlgebraType0 Arr f = ()
 type instance AlgebraType  Arr c = Arrow c
@@ -161,8 +163,10 @@ instance Arrow (A f) where
   second (A f) = A $ \k -> second (f k)
 
 instance Profunctor (A f) where
-  lmap f a = arr f >>> a
-  rmap f a = a >>> arr f
+  lmap = (^>>)
+  {-# INLINE lmap #-}
+  rmap = (^<<)
+  {-# INLINE rmap #-}
 
 type instance AlgebraType0 A f = ()
 type instance AlgebraType  A c = Arrow c
